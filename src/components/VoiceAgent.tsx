@@ -1,11 +1,62 @@
 import { useState, useCallback } from "react";
 import { useConversation } from "@elevenlabs/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, MicOff, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const AGENT_ID = "agent_5501kgzectw4ep69wjamch6xr2k7";
 
+/* ── Custom OV·voice mark ─────────────────────────────── */
+const OVMark = ({ size = 22 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
+    {/* Mic body */}
+    <rect x="10.5" y="3" width="7" height="13" rx="3.5" fill="white" fillOpacity="0.92" />
+    {/* Mic stand arc */}
+    <path
+      d="M6.5 14.5C6.5 18.918 9.806 22.5 14 22.5C18.194 22.5 21.5 18.918 21.5 14.5"
+      stroke="white"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeOpacity="0.9"
+    />
+    {/* Stand line */}
+    <line x1="14" y1="22.5" x2="14" y2="25.5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeOpacity="0.9" />
+    {/* Base */}
+    <line x1="10.5" y1="25.5" x2="17.5" y2="25.5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeOpacity="0.85" />
+    {/* OV letterform — subtle 'OV' above the mic, as a small highlight arc */}
+    <path
+      d="M9 8.5 Q14 6 19 8.5"
+      stroke="white"
+      strokeWidth="1.1"
+      strokeLinecap="round"
+      strokeOpacity="0.35"
+    />
+  </svg>
+);
+
+/* ── Waveform bars ────────────────────────────────────── */
+const WaveformBars = ({ isSpeaking }: { isSpeaking: boolean }) => (
+  <div className="flex items-center gap-[3px]">
+    {[0, 1, 2, 3, 4].map((i) => (
+      <motion.div
+        key={i}
+        className="w-[2.5px] rounded-full bg-white"
+        animate={isSpeaking
+          ? { height: [3, 14 + i * 2, 3] }
+          : { height: [3, 7, 3] }
+        }
+        transition={{
+          duration: isSpeaking ? 0.33 : 1.1,
+          repeat: Infinity,
+          delay: i * 0.08,
+          ease: "easeInOut",
+        }}
+      />
+    ))}
+  </div>
+);
+
+/* ── Main component ───────────────────────────────────── */
 const VoiceAgent = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -38,9 +89,7 @@ const VoiceAgent = () => {
 
   const handleToggle = () => {
     if (isOpen) {
-      if (conversation.status === "connected") {
-        stopConversation();
-      }
+      if (conversation.status === "connected") stopConversation();
       setIsOpen(false);
     } else {
       setIsOpen(true);
@@ -52,194 +101,159 @@ const VoiceAgent = () => {
 
   return (
     <>
-      {/* Floating orb trigger */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2.5">
-        {/* Hover label */}
-        <AnimatePresence>
-          {!isOpen && (
-            <motion.div
-              initial={{ opacity: 0, x: 10, scale: 0.92 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 10, scale: 0.92 }}
-              transition={{ duration: 0.18 }}
-              className="rounded-full px-4 py-2 text-[10px] font-semibold tracking-[0.18em] uppercase whitespace-nowrap"
-              style={{
-                background: "hsla(0,0%,4%,0.82)",
-                border: "1px solid hsla(0,0%,100%,0.1)",
-                color: "hsl(0,0%,75%)",
-                backdropFilter: "blur(16px)",
-                boxShadow: "0 4px 16px -4px hsla(0,0%,0%,0.5)",
-              }}
-            >
-              Ritual Advisor
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Orb button */}
+      {/* ── Floating orb ─────────────────────────────── */}
+      <div className="fixed bottom-6 right-6 z-50">
         <motion.button
           onClick={handleToggle}
-          className="relative w-16 h-16 rounded-full flex items-center justify-center focus:outline-none"
-          whileTap={{ scale: 0.93 }}
+          className="relative w-[58px] h-[58px] rounded-full flex items-center justify-center focus:outline-none"
+          whileTap={{ scale: 0.91 }}
+          aria-label="Open Ritual Advisor"
         >
-          {/* Outer pulsing rings — only when connected */}
+          {/* Ambient glow — always present, livelier when connected */}
+          <motion.div
+            className="absolute inset-[-8px] rounded-full"
+            style={{
+              background: isConnected
+                ? "radial-gradient(circle, hsla(168,76%,42%,0.28) 0%, transparent 65%)"
+                : "radial-gradient(circle, hsla(168,76%,42%,0.13) 0%, transparent 65%)",
+            }}
+            animate={{ scale: [1, 1.18, 1], opacity: [0.8, 1, 0.8] }}
+            transition={{ duration: isConnected ? 1.6 : 3.2, repeat: Infinity, ease: "easeInOut" }}
+          />
+
+          {/* Active pulse rings */}
           {isConnected && (
             <>
               <motion.div
-                className="absolute inset-0 rounded-full"
-                style={{ background: "radial-gradient(circle, hsla(168,76%,42%,0.15) 0%, transparent 70%)" }}
-                animate={{ scale: [1, 1.8, 1], opacity: [0.5, 0, 0.5] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute inset-0 rounded-full border"
+                style={{ borderColor: "hsla(168,76%,42%,0.3)" }}
+                animate={{ scale: [1, 1.9], opacity: [0.5, 0] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
               />
               <motion.div
-                className="absolute inset-0 rounded-full"
-                style={{ background: "radial-gradient(circle, hsla(168,76%,42%,0.12) 0%, transparent 70%)" }}
-                animate={{ scale: [1, 2.2, 1], opacity: [0.4, 0, 0.4] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                className="absolute inset-0 rounded-full border"
+                style={{ borderColor: "hsla(168,76%,42%,0.2)" }}
+                animate={{ scale: [1, 2.4], opacity: [0.4, 0] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut", delay: 0.5 }}
               />
             </>
           )}
 
-          {/* Idle soft glow ring */}
-          {!isConnected && (
-            <motion.div
-              className="absolute inset-[-6px] rounded-full"
-              style={{ background: "radial-gradient(circle, hsla(168,76%,42%,0.1) 0%, transparent 65%)" }}
-              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.9, 0.5] }}
-              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-            />
-          )}
-
-          {/* Gradient orb body */}
+          {/* Orb body */}
           <div
-            className="relative w-14 h-14 rounded-full flex items-center justify-center shadow-xl"
+            className="relative w-[54px] h-[54px] rounded-full flex items-center justify-center"
             style={{
               background: isConnected
-                ? "linear-gradient(135deg, hsl(168,76%,42%) 0%, hsl(42,80%,55%) 100%)"
-                : "linear-gradient(145deg, hsl(168,76%,30%) 0%, hsl(168,76%,42%) 55%, hsl(168,60%,36%) 100%)",
+                ? "linear-gradient(140deg, hsl(168,76%,44%) 0%, hsl(42,80%,52%) 100%)"
+                : "linear-gradient(145deg, hsl(168,76%,24%) 0%, hsl(168,76%,40%) 50%, hsl(168,60%,32%) 100%)",
               boxShadow: isConnected
-                ? "0 0 32px -4px hsla(168,76%,42%,0.65), 0 8px 28px -8px hsla(0,0%,0%,0.6), inset 0 1px 0 hsla(255,100%,100%,0.12)"
-                : "0 0 22px -6px hsla(168,76%,42%,0.45), 0 8px 24px -8px hsla(0,0%,0%,0.55), inset 0 1px 0 hsla(255,100%,100%,0.1)",
+                ? "0 0 36px -4px hsla(168,76%,42%,0.7), 0 8px 32px -8px hsla(0,0%,0%,0.7), inset 0 1px 0 hsla(255,100%,100%,0.15)"
+                : "0 0 18px -4px hsla(168,76%,42%,0.4), 0 8px 24px -8px hsla(0,0%,0%,0.65), inset 0 1px 0 hsla(255,100%,100%,0.1)",
             }}
           >
             {isOpen ? (
-              <X size={18} className="text-white" />
+              <X size={17} strokeWidth={2.5} className="text-white" />
             ) : isConnected ? (
-              /* Waveform bars when active */
-              <div className="flex items-center gap-[3px]">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <motion.div
-                    key={i}
-                    className="w-[2.5px] rounded-full bg-white"
-                    animate={isSpeaking
-                      ? { height: [3, 13 + i * 2, 3] }
-                      : { height: [3, 7, 3] }
-                    }
-                    transition={{
-                      duration: isSpeaking ? 0.35 : 1.1,
-                      repeat: Infinity,
-                      delay: i * 0.09,
-                      ease: "easeInOut",
-                    }}
-                  />
-                ))}
-              </div>
+              <WaveformBars isSpeaking={isSpeaking} />
             ) : (
-              /* Premium idle — just mic icon, no text */
-              <Mic size={18} className="text-white opacity-90" />
+              <OVMark size={26} />
             )}
           </div>
         </motion.button>
       </div>
 
-      {/* Agent panel */}
+      {/* ── Agent panel ──────────────────────────────── */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 16, scale: 0.96 }}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.96 }}
-            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed bottom-28 right-6 z-50 w-[320px] rounded-2xl overflow-hidden shadow-2xl shadow-background/60"
-            style={{ border: "1px solid hsl(var(--border))" }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed bottom-[82px] right-6 z-50 w-[300px] rounded-2xl overflow-hidden"
+            style={{
+              background: "hsl(0,0%,6%)",
+              border: "1px solid hsl(0,0%,16%)",
+              boxShadow: "0 24px 60px -12px hsla(0,0%,0%,0.9), 0 0 0 1px hsla(0,0%,100%,0.04)",
+            }}
           >
-            {/* Gradient accent bar */}
+            {/* Top gradient bar */}
             <div
-              className="h-1 w-full"
+              className="h-[2px] w-full"
               style={{ background: "linear-gradient(90deg, hsl(168,76%,42%) 0%, hsl(42,80%,55%) 100%)" }}
             />
 
             {/* Header */}
             <div
-              className="px-5 py-4 border-b"
-              style={{
-                background: "hsla(var(--card), 0.98)",
-                borderColor: "hsl(var(--border))",
-              }}
+              className="px-5 pt-4 pb-4"
+              style={{ borderBottom: "1px solid hsl(0,0%,12%)" }}
             >
               <div className="flex items-center gap-3">
+                {/* Mini orb mark */}
                 <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: "linear-gradient(135deg, hsl(168,76%,38%) 0%, hsl(168,76%,44%) 100%)", boxShadow: "0 2px 10px -3px hsla(168,76%,42%,0.45)" }}
+                  className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: "linear-gradient(145deg, hsl(168,76%,24%) 0%, hsl(168,76%,40%) 100%)",
+                    boxShadow: "0 2px 12px -4px hsla(168,76%,42%,0.5)",
+                  }}
                 >
-                  <Mic size={15} className="text-white opacity-90" />
+                  <OVMark size={18} />
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground tracking-tight">Ritual Advisor</p>
-                  <p className="text-[11px] text-muted-foreground">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold text-foreground tracking-tight">Ritual Advisor</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
                     {isConnected
-                      ? isSpeaking ? "Speaking..." : "Listening to you..."
-                      : user ? `Personalized for ${profile?.full_name?.split(" ")[0] || "you"}` : "Voice assistant"}
+                      ? isSpeaking ? "Speaking…" : "Listening…"
+                      : user
+                      ? `Personalized for ${profile?.full_name?.split(" ")[0] || "you"}`
+                      : "AI-powered wellness guidance"}
                   </p>
                 </div>
                 {isConnected && (
-                  <div className="ml-auto w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  <motion.div
+                    className="w-2 h-2 rounded-full ml-auto flex-shrink-0"
+                    style={{ background: "hsl(168,76%,42%)" }}
+                    animate={{ opacity: [1, 0.3, 1] }}
+                    transition={{ duration: 1.2, repeat: Infinity }}
+                  />
                 )}
               </div>
             </div>
 
             {/* Body */}
-            <div
-              className="px-5 py-8 flex flex-col items-center gap-5"
-              style={{ background: "hsla(var(--background), 0.97)" }}
-            >
+            <div className="px-5 py-7 flex flex-col items-center gap-5">
               {isConnected ? (
                 <>
-                  {/* Active orb visualization */}
-                  <div className="relative w-24 h-24 flex items-center justify-center">
+                  {/* Active orb */}
+                  <div className="relative w-20 h-20 flex items-center justify-center">
                     <motion.div
-                      className="absolute inset-0 rounded-full"
-                      style={{ background: "radial-gradient(circle, hsla(168,76%,42%,0.12) 0%, transparent 70%)" }}
-                      animate={{ scale: isSpeaking ? [1, 1.5, 1] : [1, 1.15, 1] }}
-                      transition={{ duration: isSpeaking ? 0.5 : 2, repeat: Infinity }}
-                    />
-                    <motion.div
-                      className="absolute inset-3 rounded-full"
-                      style={{ background: "radial-gradient(circle, hsla(168,76%,42%,0.1) 0%, transparent 70%)" }}
-                      animate={{ scale: isSpeaking ? [1, 1.3, 1] : [1, 1.08, 1] }}
-                      transition={{ duration: isSpeaking ? 0.4 : 2.5, repeat: Infinity, delay: 0.1 }}
+                      className="absolute inset-[-6px] rounded-full"
+                      style={{ background: "radial-gradient(circle, hsla(168,76%,42%,0.14) 0%, transparent 70%)" }}
+                      animate={{ scale: isSpeaking ? [1, 1.4, 1] : [1, 1.12, 1] }}
+                      transition={{ duration: isSpeaking ? 0.5 : 2.2, repeat: Infinity }}
                     />
                     <div
-                      className="w-14 h-14 rounded-full flex items-center justify-center"
-                      style={{ background: "linear-gradient(135deg, hsl(168,76%,42%) 0%, hsl(42,80%,55%) 100%)" }}
+                      className="w-16 h-16 rounded-full flex items-center justify-center"
+                      style={{
+                        background: "linear-gradient(140deg, hsl(168,76%,40%) 0%, hsl(42,80%,52%) 100%)",
+                        boxShadow: "0 0 28px -6px hsla(168,76%,42%,0.6)",
+                      }}
                     >
-                      <Mic size={22} className="text-white" />
+                      <OVMark size={28} />
                     </div>
                   </div>
 
-                  <p className="text-xs text-muted-foreground text-center leading-relaxed">
-                    {isSpeaking
-                      ? "Your advisor is responding..."
-                      : "Speak naturally — I'm here for you"}
+                  <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
+                    {isSpeaking ? "Your advisor is responding…" : "Speak naturally — I'm listening"}
                   </p>
 
                   <button
                     onClick={stopConversation}
-                    className="px-7 py-2.5 text-xs font-semibold tracking-widest uppercase rounded-lg transition-all duration-200 border"
+                    className="w-full py-2.5 text-[11px] font-semibold tracking-[0.2em] uppercase rounded-xl transition-all duration-200 hover:brightness-110"
                     style={{
-                      background: "hsl(var(--secondary))",
-                      color: "hsl(var(--foreground))",
-                      borderColor: "hsl(var(--border))",
+                      background: "hsl(0,0%,10%)",
+                      color: "hsl(0,0%,70%)",
+                      border: "1px solid hsl(0,0%,18%)",
                     }}
                   >
                     End Session
@@ -247,18 +261,31 @@ const VoiceAgent = () => {
                 </>
               ) : (
                 <>
-                  <div
-                    className="w-20 h-20 rounded-full flex items-center justify-center"
-                    style={{ background: "hsl(var(--secondary))" }}
-                  >
-                    <MicOff size={26} className="text-muted-foreground" />
+                  {/* Idle orb */}
+                  <div className="relative w-20 h-20 flex items-center justify-center">
+                    <motion.div
+                      className="absolute inset-[-8px] rounded-full"
+                      style={{ background: "radial-gradient(circle, hsla(168,76%,42%,0.09) 0%, transparent 65%)" }}
+                      animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                    <div
+                      className="w-16 h-16 rounded-full flex items-center justify-center"
+                      style={{
+                        background: "linear-gradient(145deg, hsl(168,76%,18%) 0%, hsl(168,76%,32%) 100%)",
+                        border: "1px solid hsla(168,76%,42%,0.2)",
+                        boxShadow: "0 4px 20px -8px hsla(168,76%,42%,0.4)",
+                      }}
+                    >
+                      <OVMark size={28} />
+                    </div>
                   </div>
 
                   <div className="text-center space-y-1.5">
-                    <p className="text-sm font-semibold text-foreground">
-                      {user ? "Talk to your advisor" : "Meet your ritual advisor"}
+                    <p className="text-[13px] font-semibold text-foreground tracking-tight">
+                      {user ? "Talk to your advisor" : "Meet your Ritual Advisor"}
                     </p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
+                    <p className="text-[11px] text-muted-foreground leading-relaxed max-w-[220px] mx-auto">
                       {user && profile?.ritual_summary
                         ? profile.ritual_summary
                         : "Ask about protocols, products, or build your personalized ritual."}
@@ -268,14 +295,14 @@ const VoiceAgent = () => {
                   <button
                     onClick={startConversation}
                     disabled={isConnecting}
-                    className="w-full py-3.5 text-xs font-semibold tracking-widest uppercase rounded-xl transition-all duration-300 disabled:opacity-50"
+                    className="w-full py-3 text-[11px] font-semibold tracking-[0.22em] uppercase rounded-xl transition-all duration-300 hover:brightness-110 hover:scale-[1.02] active:scale-[0.99] disabled:opacity-50"
                     style={{
-                      background: "linear-gradient(135deg, hsl(168,76%,42%) 0%, hsl(168,76%,36%) 100%)",
-                      color: "hsl(var(--primary-foreground))",
-                      boxShadow: "0 4px 20px -6px hsla(168,76%,42%,0.5)",
+                      background: "linear-gradient(135deg, hsl(168,76%,40%) 0%, hsl(168,76%,34%) 100%)",
+                      color: "hsl(0,0%,98%)",
+                      boxShadow: "0 4px 24px -6px hsla(168,76%,42%,0.55), 0 0 0 1px hsla(168,76%,42%,0.2), inset 0 1px 0 hsla(255,100%,100%,0.1)",
                     }}
                   >
-                    {isConnecting ? "Connecting..." : "Start Conversation"}
+                    {isConnecting ? "Connecting…" : "Start Conversation"}
                   </button>
                 </>
               )}
