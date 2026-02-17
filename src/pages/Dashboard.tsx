@@ -73,13 +73,13 @@ const COLLECTIVE_TIPS = [
 const DAYS_OF_WEEK = ["M", "T", "W", "T", "F", "S", "S"];
 
 const Dashboard = () => {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const [rituals, setRituals] = useState<UserRitual[]>([]);
   const [todayLogs, setTodayLogs] = useState<RitualLog[]>([]);
   const [weekLogs, setWeekLogs] = useState<RitualLog[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
   const [checkingIn, setCheckingIn] = useState<string | null>(null);
   const [addingProduct, setAddingProduct] = useState<string | null>(null);
   const [showAddPanel, setShowAddPanel] = useState(false);
@@ -95,7 +95,7 @@ const Dashboard = () => {
 
   const fetchData = async () => {
     if (!user) return;
-    setLoading(true);
+    setDataLoading(true);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -124,12 +124,14 @@ const Dashboard = () => {
     if (logsRes.data) setTodayLogs(logsRes.data);
     if (weekLogsRes.data) setWeekLogs(weekLogsRes.data);
     if (productsRes.data) setProducts(productsRes.data);
-    setLoading(false);
+    setDataLoading(false);
   };
 
   useEffect(() => {
-    fetchData();
-  }, [user]);
+    if (!authLoading && user) {
+      fetchData();
+    }
+  }, [user, authLoading]);
 
   const handleCheckIn = async (productId: string, score: number) => {
     if (!user) return;
@@ -205,7 +207,7 @@ const Dashboard = () => {
     navigate("/");
   };
 
-  if (loading) {
+  if (authLoading || dataLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
@@ -219,7 +221,7 @@ const Dashboard = () => {
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_left,_hsla(168,76%,42%,0.06)_0%,_transparent_50%)] pointer-events-none" />
 
       {/* Navbar */}
-      <header className="sticky top-0 z-40 glass border-b border-border px-6 py-3">
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border px-6 py-3">
         <div className="container mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
             <img src={logoMark} alt="OmniaVital" className="w-8 h-8 rounded-lg" />
