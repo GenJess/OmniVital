@@ -62,22 +62,38 @@ const Navbar = () => {
               </a>
             ))}
 
-            {user ? (
-              <div className="flex items-center gap-3 ml-2">
+          {user ? (
+              <div className="flex items-center gap-2 ml-2">
+                {/* OVO G gold badge */}
+                <div
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border"
+                  style={{
+                    background: "linear-gradient(135deg, hsla(42,80%,55%,0.12) 0%, hsla(42,80%,35%,0.08) 100%)",
+                    borderColor: "hsla(42,80%,55%,0.35)",
+                  }}
+                >
+                  <span
+                    className="text-[9px] font-black tracking-[0.25em] uppercase"
+                    style={{ color: "hsl(42,80%,60%)" }}
+                  >
+                    OVO·G
+                  </span>
+                </div>
+
                 <Link
                   to="/dashboard"
-                  className="flex items-center gap-2.5 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all duration-200"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all duration-200"
                 >
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-[10px] font-bold text-accent-foreground">
+                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-[9px] font-black text-accent-foreground">
                     {firstName[0]?.toUpperCase()}
                   </div>
-                  <span className="text-xs font-semibold tracking-[0.15em] uppercase text-foreground">
-                    Dashboard
+                  <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-foreground">
+                    {firstName}
                   </span>
                 </Link>
                 <button
                   onClick={handleSignOut}
-                  className="text-xs font-medium tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors px-3 py-2"
+                  className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg border border-transparent hover:border-border"
                 >
                   Sign Out
                 </button>
@@ -85,9 +101,9 @@ const Navbar = () => {
             ) : (
               <Link
                 to="/auth"
-                className="ml-2 px-5 py-2 text-xs font-semibold tracking-[0.2em] uppercase text-primary border border-primary/30 rounded-lg hover:bg-primary/10 transition-all duration-200"
+                className="ml-2 px-5 py-2 text-xs font-semibold tracking-[0.2em] uppercase bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-200 shadow-lg shadow-primary/20"
               >
-                Account
+                Join The Collective
               </Link>
             )}
           </div>

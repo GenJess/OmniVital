@@ -22,10 +22,20 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="mb-6"
+          className="mb-6 flex items-center justify-center gap-3"
         >
           <span className="text-xs tracking-[0.4em] uppercase text-primary font-medium px-4 py-2 rounded-full border border-primary/20 bg-primary/5">
-            Bio-Optimized Performance
+            AI-Personalized Wellness
+          </span>
+          <span
+            className="text-[9px] font-black tracking-[0.25em] uppercase px-2.5 py-1 rounded-full border"
+            style={{
+              color: "hsl(42,80%,60%)",
+              background: "linear-gradient(135deg, hsla(42,80%,55%,0.1) 0%, hsla(42,80%,35%,0.06) 100%)",
+              borderColor: "hsla(42,80%,55%,0.3)",
+            }}
+          >
+            OVO·G
           </span>
         </motion.div>
 
@@ -35,9 +45,9 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.5 }}
           className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-foreground leading-[0.95]"
         >
-          Optimal Life,
+          Your Ritual,
           <br />
-          <span className="text-gradient">Seamlessly</span> Integrated.
+          <span className="text-gradient">Intelligent</span> by Design.
         </motion.h1>
 
         <motion.p
@@ -46,18 +56,29 @@ const HeroSection = () => {
           transition={{ duration: 0.8, delay: 0.7 }}
           className="mt-6 text-lg md:text-xl text-muted-foreground font-light tracking-wide max-w-2xl mx-auto"
         >
-          Bio-optimized nutrition for the modern vanguard.
+          Meet your AI Ritual Advisor. Personalized protocols built around your biology,
+          goals, and lifestyle — refined through every conversation.
         </motion.p>
 
-        <motion.a
-          href="#ritual"
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.9 }}
-          className="inline-block mt-10 px-10 py-4 bg-primary text-primary-foreground font-semibold tracking-widest uppercase text-sm rounded-lg hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.02] transition-all duration-300"
+          className="flex flex-col sm:flex-row items-center gap-4 mt-10 justify-center"
         >
-          Explore The Ritual
-        </motion.a>
+          <a
+            href="#ritual"
+            className="inline-flex items-center gap-2 px-10 py-4 bg-primary text-primary-foreground font-semibold tracking-widest uppercase text-sm rounded-lg hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.02] transition-all duration-300"
+          >
+            Explore The Ritual
+          </a>
+          <a
+            href="#community"
+            className="inline-flex items-center gap-2 px-8 py-4 border border-border text-muted-foreground font-semibold tracking-widest uppercase text-sm rounded-lg hover:border-primary/40 hover:text-foreground transition-all duration-300"
+          >
+            Join The Collective
+          </a>
+        </motion.div>
       </div>
 
       {/* Scroll indicator */}

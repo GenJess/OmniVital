@@ -15,9 +15,13 @@ import {
   MessageCircle,
   ChevronRight,
   Leaf,
+  Users,
+  Send,
+  Lock,
 } from "lucide-react";
 import logoMark from "@/assets/logo-mark.png";
 import VoiceAgent from "@/components/VoiceAgent";
+
 
 interface Product {
   id: string;
@@ -215,7 +219,7 @@ const Dashboard = () => {
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_left,_hsla(168,76%,42%,0.06)_0%,_transparent_50%)] pointer-events-none" />
 
       {/* Navbar */}
-      <header className="sticky top-0 z-40 glass border-b border-border px-6 py-4">
+      <header className="sticky top-0 z-40 glass border-b border-border px-6 py-3">
         <div className="container mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
             <img src={logoMark} alt="OmniaVital" className="w-8 h-8 rounded-lg" />
@@ -223,20 +227,42 @@ const Dashboard = () => {
               OmniaVital
             </span>
           </Link>
-          <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-xs font-semibold text-foreground">{profile?.full_name || user?.email}</p>
-              <p className="text-[10px] text-muted-foreground tracking-[0.15em] uppercase">Member</p>
+
+          {/* Right row — all in one line */}
+          <div className="flex items-center gap-2.5">
+            {/* OVO G gold badge */}
+            <div
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full border"
+              style={{
+                background: "linear-gradient(135deg, hsla(42,80%,55%,0.12) 0%, hsla(42,80%,35%,0.06) 100%)",
+                borderColor: "hsla(42,80%,55%,0.35)",
+              }}
+            >
+              <span
+                className="text-[9px] font-black tracking-[0.25em] uppercase"
+                style={{ color: "hsl(42,80%,60%)" }}
+              >
+                OVO·G
+              </span>
             </div>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xs font-bold text-accent-foreground">
-              {firstName[0]?.toUpperCase()}
+
+            {/* Avatar + name */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-[10px] font-black text-accent-foreground">
+                {firstName[0]?.toUpperCase()}
+              </div>
+              <span className="text-[10px] font-semibold tracking-[0.12em] uppercase text-foreground hidden sm:block">
+                {profile?.full_name?.split(" ")[0] || firstName}
+              </span>
             </div>
+
+            {/* Sign out as a styled button */}
             <button
               onClick={handleSignOut}
-              className="p-2 text-muted-foreground hover:text-foreground transition-colors"
-              title="Sign out"
+              className="flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg border border-transparent hover:border-border"
             >
-              <LogOut size={16} />
+              <LogOut size={13} />
+              <span className="hidden sm:block">Sign Out</span>
             </button>
           </div>
         </div>
@@ -450,6 +476,100 @@ const Dashboard = () => {
           </div>
         </motion.div>
 
+        {/* Community Chat Board */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.25 }}
+        >
+          <div className="flex items-center gap-2 mb-5">
+            <Users size={18} className="text-primary" />
+            <h2 className="text-sm font-semibold tracking-[0.1em] uppercase text-foreground">
+              The Collective — Chat
+            </h2>
+            <span
+              className="ml-auto text-[9px] font-black tracking-[0.25em] uppercase px-2 py-0.5 rounded-full border"
+              style={{ color: "hsl(42,80%,60%)", borderColor: "hsla(42,80%,55%,0.3)", background: "hsla(42,80%,55%,0.08)" }}
+            >
+              OVO·G Members
+            </span>
+          </div>
+
+          <div className="glass rounded-2xl border border-border overflow-hidden">
+            {/* Chat messages area */}
+            <div className="p-5 space-y-4 min-h-[240px]">
+              {[
+                { initials: "MR", name: "Marcus R.", time: "2h ago", msg: "Day 14 on the morning stack. Sleep quality has been noticeably better. Anyone else notice this?", badge: true },
+                { initials: "SK", name: "Sofia K.", time: "1h ago", msg: "Yes! Especially stacking the adaptogens before coffee like the protocol says. Total game changer for cortisol.", badge: false },
+                { initials: "JL", name: "James L.", time: "45m ago", msg: "How long before most people start feeling the cognitive stack working? I'm on day 5.", badge: true },
+                { initials: "OV", name: "OmniaVital Team", time: "30m ago", msg: "Most members report noticing cognitive support around days 7–14 as the compounds build in your system. Consistency is everything 🌿", badge: false, isTeam: true },
+              ].map((msg, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.07 }}
+                  className="flex items-start gap-3"
+                >
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0"
+                    style={msg.isTeam
+                      ? { background: "linear-gradient(135deg, hsl(168,76%,42%) 0%, hsl(42,80%,55%) 100%)", color: "white" }
+                      : { background: "hsl(var(--secondary))", color: "hsl(var(--foreground))" }
+                    }
+                  >
+                    {msg.initials}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[11px] font-semibold text-foreground">{msg.name}</span>
+                      {msg.badge && (
+                        <span
+                          className="text-[8px] font-black tracking-[0.2em] uppercase px-1.5 py-0.5 rounded-full border"
+                          style={{ color: "hsl(42,80%,60%)", borderColor: "hsla(42,80%,55%,0.3)", background: "hsla(42,80%,55%,0.08)" }}
+                        >
+                          OVO·G
+                        </span>
+                      )}
+                      <span className="text-[10px] text-muted-foreground ml-auto">{msg.time}</span>
+                    </div>
+                    <p className={`text-sm leading-relaxed ${msg.isTeam ? "text-primary" : "text-muted-foreground"}`}>
+                      {msg.msg}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Chat input */}
+            <div className="border-t border-border p-4 flex items-center gap-3">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-[9px] font-black text-accent-foreground flex-shrink-0">
+                {firstName[0]?.toUpperCase()}
+              </div>
+              <div className="flex-1 flex items-center gap-2 px-4 py-2.5 bg-secondary/50 border border-border rounded-xl">
+                <input
+                  type="text"
+                  placeholder="Share with The Collective..."
+                  className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                />
+                <button className="text-primary hover:text-primary/80 transition-colors">
+                  <Send size={14} />
+                </button>
+              </div>
+            </div>
+
+            {/* Coming soon overlay */}
+            <div className="relative">
+              <div className="absolute inset-x-0 -top-28 h-28 bg-gradient-to-t from-card/80 to-transparent pointer-events-none" />
+            </div>
+          </div>
+
+          <p className="text-center text-[10px] text-muted-foreground/50 mt-3 tracking-wide flex items-center justify-center gap-1.5">
+            <Lock size={9} />
+            Live community coming soon — OVO·G members get early access
+          </p>
+        </motion.div>
+
         {/* Talk to Advisor CTA */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -460,11 +580,14 @@ const Dashboard = () => {
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mx-auto mb-4">
             <MessageCircle size={20} className="text-accent-foreground" />
           </div>
-          <h3 className="text-lg font-bold text-foreground mb-2">Talk to Your Advisor</h3>
+          <h3 className="text-lg font-bold text-foreground mb-2">Talk to Your Ritual Advisor</h3>
           <p className="text-sm text-muted-foreground mb-6 max-w-xs mx-auto">
-            Your AI ritual advisor knows your stack. Ask questions, get recommendations, optimize your protocol.
+            Your AI advisor knows your stack, your goals, and your history. Ask anything — optimize, refine, or just check in.
           </p>
-          <p className="text-xs text-muted-foreground">Use the button in the bottom right →</p>
+          <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            Tap the OV orb in the bottom right corner
+          </p>
         </motion.div>
       </main>
 
@@ -474,3 +597,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
