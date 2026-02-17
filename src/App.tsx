@@ -3,8 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import ProductDetail from "./pages/ProductDetail";
 import NotFound from "./pages/NotFound";
@@ -13,10 +12,10 @@ import Dashboard from "./pages/Dashboard";
 
 const queryClient = new QueryClient();
 
-// Guard rendered inline — avoids passing ProtectedRoute as a JSX element
-// into React Router's element prop which triggers the ref warning
+// This must render inside <AuthProvider> so useAuth() works
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -24,8 +23,29 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
+
   if (!session) return <Navigate to="/auth" replace />;
   return <>{children}</>;
+}
+
+// Routes are defined inside AuthProvider so RequireAuth can call useAuth()
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/auth" element={<Auth />} />
+      <Route
+        path="/dashboard"
+        element={
+          <RequireAuth>
+            <Dashboard />
+          </RequireAuth>
+        }
+      />
+      <Route path="/product/:slug" element={<ProductDetail />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
 }
 
 const App = () => (
@@ -35,20 +55,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route
-              path="/dashboard"
-              element={
-                <RequireAuth>
-                  <Dashboard />
-                </RequireAuth>
-              }
-            />
-            <Route path="/product/:slug" element={<ProductDetail />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppRoutes />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
