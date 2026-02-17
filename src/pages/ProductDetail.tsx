@@ -1,5 +1,5 @@
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,22 +15,59 @@ const productImages: Record<string, string> = {
   "evening-recovery": productEvening,
 };
 
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  tagline: string;
+  category: string;
+  description: string;
+  price: number;
+  image_url: string | null;
+  bio_availability_text: string | null;
+  sourcing_text: string | null;
+  daily_ritual_text: string | null;
+}
+
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-  const { data: product, isLoading } = useQuery({
-    queryKey: ["product", slug],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("slug", slug!)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!slug,
-  });
+  useEffect(() => {
+    if (!slug) {
+      setNotFound(true);
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchProduct = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("products")
+          .select("*")
+          .eq("slug", slug)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (!data) {
+          setNotFound(true);
+        } else {
+          setProduct(data);
+        }
+      } catch (err) {
+        console.error("Failed to load product:", err);
+        setNotFound(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [slug]);
 
   if (isLoading) {
     return (
@@ -40,10 +77,11 @@ const ProductDetail = () => {
     );
   }
 
-  if (!product) {
+  if (notFound || !product) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
         <p className="text-muted-foreground">Product not found.</p>
+        <Link to="/" className="text-sm text-primary hover:underline">← Back to rituals</Link>
       </div>
     );
   }
