@@ -43,8 +43,12 @@ const Navbar = () => {
       >
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
           <Link to="/" className="group flex items-center gap-3">
-            <img src={logoMark} alt="OmniaVital" className="w-9 h-9 rounded-lg object-cover" />
-            <span className="text-lg font-bold tracking-[0.15em] uppercase text-foreground">
+            <div className="relative">
+              <img src={logoMark} alt="OmniaVital" className="w-8 h-8 rounded-lg object-cover" />
+              <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{ background: "hsla(168,76%,42%,0.15)", boxShadow: "0 0 12px hsla(168,76%,42%,0.3)" }} />
+            </div>
+            <span className="text-sm font-bold tracking-[0.2em] uppercase text-foreground hidden lg:block">
               OmniaVital
             </span>
           </Link>
@@ -63,45 +67,47 @@ const Navbar = () => {
             ))}
 
           {user ? (
-              <div className="flex items-center gap-2 ml-2">
-                {/* OVO G gold badge */}
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 ml-3 px-3 py-1.5 rounded-xl transition-all duration-200 hover:bg-secondary group"
+                style={{ border: "1px solid hsl(var(--border))" }}
+              >
+                {/* Avatar initials */}
                 <div
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border"
+                  className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold flex-shrink-0"
                   style={{
-                    background: "linear-gradient(135deg, hsla(42,80%,55%,0.12) 0%, hsla(42,80%,35%,0.08) 100%)",
-                    borderColor: "hsla(42,80%,55%,0.35)",
+                    background: "linear-gradient(135deg, hsl(168,76%,42%) 0%, hsl(42,80%,55%) 100%)",
+                    color: "hsl(0,0%,98%)",
                   }}
                 >
-                  <span
-                    className="text-[9px] font-black tracking-[0.25em] uppercase"
-                    style={{ color: "hsl(42,80%,60%)" }}
-                  >
-                    OVO·G
-                  </span>
+                  {firstName[0]?.toUpperCase()}
                 </div>
-
-                <Link
-                  to="/dashboard"
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all duration-200"
+                {/* Name */}
+                <span className="text-[11px] font-semibold tracking-[0.12em] uppercase text-foreground">
+                  {firstName}
+                </span>
+                {/* OVO·G tag — visually subordinate */}
+                <span
+                  className="text-[8px] font-black tracking-[0.22em] uppercase px-1.5 py-0.5 rounded"
+                  style={{
+                    color: "hsl(42,76%,58%)",
+                    background: "hsla(42,80%,55%,0.12)",
+                    border: "1px solid hsla(42,80%,55%,0.25)",
+                    lineHeight: 1,
+                  }}
                 >
-                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-[9px] font-black text-accent-foreground">
-                    {firstName[0]?.toUpperCase()}
-                  </div>
-                  <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-foreground">
-                    {firstName}
-                  </span>
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg border border-transparent hover:border-border"
-                >
-                  Sign Out
-                </button>
-              </div>
+                  OVO·G
+                </span>
+              </Link>
             ) : (
               <Link
                 to="/auth"
-                className="ml-2 px-5 py-2 text-xs font-semibold tracking-[0.2em] uppercase bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-200 shadow-lg shadow-primary/20"
+                className="ml-3 px-5 py-2 text-[11px] font-semibold tracking-[0.2em] uppercase rounded-lg transition-all duration-200"
+                style={{
+                  background: "hsl(168,76%,42%)",
+                  color: "hsl(0,0%,98%)",
+                  boxShadow: "0 2px 14px -4px hsla(168,76%,42%,0.5)",
+                }}
               >
                 Join The Collective
               </Link>
