@@ -1,25 +1,35 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import logoMark from "@/assets/logo-mark.png";
-
-const navLinks = [
-  { label: "Shop", href: "#ritual" },
-  { label: "Science", href: "#science" },
-  { label: "Community", href: "#community" },
-  { label: "Account", href: "#" },
-];
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const firstName = profile?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+    setMobileOpen(false);
+  };
+
+  const navLinks = [
+    { label: "Shop", href: "#ritual" },
+    { label: "Science", href: "#science" },
+    { label: "Community", href: "#community" },
+  ];
 
   return (
     <>
@@ -28,9 +38,7 @@ const Navbar = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.1 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${
-          scrolled
-            ? "glass shadow-lg shadow-background/50"
-            : "bg-transparent"
+          scrolled ? "glass shadow-lg shadow-background/50" : "bg-transparent"
         }`}
       >
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
@@ -53,6 +61,35 @@ const Navbar = () => {
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-px bg-primary group-hover:w-3/4 transition-all duration-300" />
               </a>
             ))}
+
+            {user ? (
+              <div className="flex items-center gap-3 ml-2">
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-2.5 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all duration-200"
+                >
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-[10px] font-bold text-accent-foreground">
+                    {firstName[0]?.toUpperCase()}
+                  </div>
+                  <span className="text-xs font-semibold tracking-[0.15em] uppercase text-foreground">
+                    Dashboard
+                  </span>
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="text-xs font-medium tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors px-3 py-2"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/auth"
+                className="ml-2 px-5 py-2 text-xs font-semibold tracking-[0.2em] uppercase text-primary border border-primary/30 rounded-lg hover:bg-primary/10 transition-all duration-200"
+              >
+                Account
+              </Link>
+            )}
           </div>
 
           {/* Mobile toggle */}
@@ -97,6 +134,46 @@ const Navbar = () => {
                   {link.label}
                 </motion.a>
               ))}
+              {user ? (
+                <>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: navLinks.length * 0.08 }}
+                  >
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setMobileOpen(false)}
+                      className="text-2xl font-light tracking-[0.3em] uppercase text-primary transition-colors duration-300"
+                    >
+                      Dashboard
+                    </Link>
+                  </motion.div>
+                  <motion.button
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: (navLinks.length + 1) * 0.08 }}
+                    onClick={handleSignOut}
+                    className="text-lg font-light tracking-[0.3em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300"
+                  >
+                    Sign Out
+                  </motion.button>
+                </>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: navLinks.length * 0.08 }}
+                >
+                  <Link
+                    to="/auth"
+                    onClick={() => setMobileOpen(false)}
+                    className="text-2xl font-light tracking-[0.3em] uppercase text-primary transition-colors duration-300"
+                  >
+                    Account
+                  </Link>
+                </motion.div>
+              )}
             </div>
           </motion.div>
         )}
