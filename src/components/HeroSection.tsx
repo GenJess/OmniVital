@@ -17,20 +17,28 @@ const HeroSection = () => {
         style={{ backgroundImage: `url(${heroBg})` }}
       />
 
-      {/* Deep matte overlay — much heavier to kill background competition */}
+      {/* Deep matte overlay — crushes background, zero bleed into text */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(180deg, hsl(0,0%,4%) 0%, hsla(0,0%,3%,0.72) 25%, hsla(0,0%,3%,0.82) 55%, hsl(0,0%,4%) 100%)",
+            "linear-gradient(180deg, hsl(0,0%,4%) 0%, hsla(0,0%,3%,0.65) 30%, hsla(0,0%,3%,0.78) 60%, hsl(0,0%,4%) 88%, hsl(0,0%,4%) 100%)",
         }}
       />
-      {/* Radial spotlight — creates depth, keeps center readable */}
+      {/* Radial vignette — pushes eye to center */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 80% 60% at 50% 45%, transparent 0%, hsla(0,0%,2%,0.55) 100%)",
+            "radial-gradient(ellipse 75% 55% at 50% 42%, transparent 0%, hsla(0,0%,2%,0.45) 100%)",
+        }}
+      />
+      {/* Bottom fade — seamless blend into the next section's bg */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-48"
+        style={{
+          background:
+            "linear-gradient(to bottom, transparent 0%, hsl(0,0%,4%) 100%)",
         }}
       />
 

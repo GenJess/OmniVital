@@ -102,10 +102,11 @@ const VoiceAgent = () => {
   return (
     <>
       {/* ── Floating orb ─────────────────────────────── */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-16 right-6 z-50">
         <motion.button
           onClick={handleToggle}
           className="relative w-[58px] h-[58px] rounded-full flex items-center justify-center focus:outline-none"
+          whileHover={{ scale: 1.06 }}
           whileTap={{ scale: 0.91 }}
           aria-label="Open Ritual Advisor"
         >
@@ -139,20 +140,39 @@ const VoiceAgent = () => {
             </>
           )}
 
-          {/* Orb body */}
+          {/* Orb body — 3-layer depth: outer rim, main gradient, inner highlight */}
           <div
             className="relative w-[54px] h-[54px] rounded-full flex items-center justify-center"
             style={{
               background: isConnected
-                ? "linear-gradient(140deg, hsl(168,76%,44%) 0%, hsl(42,80%,52%) 100%)"
-                : "linear-gradient(145deg, hsl(168,76%,24%) 0%, hsl(168,76%,40%) 50%, hsl(168,60%,32%) 100%)",
+                ? "linear-gradient(145deg, hsl(168,76%,52%) 0%, hsl(168,76%,38%) 50%, hsl(168,60%,28%) 100%)"
+                : "linear-gradient(145deg, hsl(168,76%,30%) 0%, hsl(168,76%,22%) 55%, hsl(168,60%,16%) 100%)",
               boxShadow: isConnected
-                ? "0 0 36px -4px hsla(168,76%,42%,0.7), 0 8px 32px -8px hsla(0,0%,0%,0.7), inset 0 1px 0 hsla(255,100%,100%,0.15)"
-                : "0 0 18px -4px hsla(168,76%,42%,0.4), 0 8px 24px -8px hsla(0,0%,0%,0.65), inset 0 1px 0 hsla(255,100%,100%,0.1)",
+                ? [
+                    "0 0 0 1px hsla(168,76%,60%,0.35)",       // outer rim highlight
+                    "0 0 36px -4px hsla(168,76%,42%,0.75)",   // colour glow
+                    "0 12px 32px -6px hsla(0,0%,0%,0.8)",     // depth shadow
+                    "inset 0 1.5px 0 hsla(255,100%,100%,0.22)", // inner top shine
+                    "inset 0 -2px 6px hsla(0,0%,0%,0.35)",    // inner bottom depth
+                  ].join(", ")
+                : [
+                    "0 0 0 1px hsla(168,76%,42%,0.22)",
+                    "0 0 18px -4px hsla(168,76%,42%,0.4)",
+                    "0 10px 28px -6px hsla(0,0%,0%,0.75)",
+                    "inset 0 1.5px 0 hsla(255,100%,100%,0.14)",
+                    "inset 0 -2px 6px hsla(0,0%,0%,0.3)",
+                  ].join(", "),
             }}
           >
+            {/* Top-left specular highlight — gives a sphere/lens feel */}
+            <div
+              className="absolute top-[6px] left-[8px] w-[14px] h-[8px] rounded-full pointer-events-none"
+              style={{
+                background: "radial-gradient(ellipse at 40% 40%, hsla(255,100%,100%,0.28) 0%, transparent 100%)",
+              }}
+            />
             {isOpen ? (
-              <X size={17} strokeWidth={2.5} className="text-white" />
+              <X size={17} strokeWidth={2.5} className="text-white relative z-10" />
             ) : isConnected ? (
               <WaveformBars isSpeaking={isSpeaking} />
             ) : (
@@ -170,7 +190,7 @@ const VoiceAgent = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed bottom-[82px] right-6 z-50 w-[300px] rounded-2xl overflow-hidden"
+            className="fixed bottom-[94px] right-6 z-50 w-[300px] rounded-2xl overflow-hidden"
             style={{
               background: "hsl(0,0%,6%)",
               border: "1px solid hsl(0,0%,16%)",

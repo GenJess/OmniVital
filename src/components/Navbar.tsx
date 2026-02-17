@@ -43,10 +43,20 @@ const Navbar = () => {
       >
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
           <Link to="/" className="group flex items-center gap-3">
-            <div className="relative">
-              <img src={logoMark} alt="OmniaVital" className="w-8 h-8 rounded-lg object-cover" />
-              <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                style={{ background: "hsla(168,76%,42%,0.15)", boxShadow: "0 0 12px hsla(168,76%,42%,0.3)" }} />
+          <div className="relative overflow-hidden rounded-lg">
+              <img src={logoMark} alt="OmniaVital" className="w-8 h-8 rounded-lg object-cover relative z-10" />
+              {/* Light-shine sweep — moves left→right on hover */}
+              <div
+                className="absolute inset-0 rounded-lg -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none z-20"
+                style={{
+                  background: "linear-gradient(105deg, transparent 30%, hsla(0,0%,100%,0.45) 50%, transparent 70%)",
+                }}
+              />
+              {/* Persistent teal glow halo */}
+              <div
+                className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0"
+                style={{ boxShadow: "0 0 18px 4px hsla(168,76%,42%,0.35)" }}
+              />
             </div>
             <span className="text-sm font-bold tracking-[0.2em] uppercase text-foreground hidden lg:block">
               OmniaVital
