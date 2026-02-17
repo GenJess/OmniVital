@@ -17,7 +17,7 @@ const Index = () => {
         <CommunitySection />
       </main>
 
-      <footer className="py-12 px-6 border-t border-border">
+      <footer className="py-10 px-6 border-t border-border">
         <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <img src={logoMark} alt="OmniaVital" className="w-7 h-7 rounded-md" />
@@ -25,7 +25,7 @@ const Index = () => {
               © 2026 OmniaVital
             </p>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground pb-2 md:pb-0">
             Premium Performance Wellness
           </p>
         </div>

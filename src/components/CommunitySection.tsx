@@ -37,7 +37,7 @@ const CommunitySection = () => {
           <p className="text-xs tracking-[0.4em] uppercase text-primary font-medium mb-4">
             The Collective
           </p>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-4">
             Join The Collective.
           </h2>
           <p className="text-sm text-muted-foreground font-light max-w-sm mx-auto leading-relaxed">
