@@ -53,18 +53,25 @@ const VoiceAgent = () => {
   return (
     <>
       {/* Floating orb trigger */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2.5">
         {/* Hover label */}
         <AnimatePresence>
           {!isOpen && (
             <motion.div
-              initial={{ opacity: 0, x: 10, scale: 0.9 }}
+              initial={{ opacity: 0, x: 10, scale: 0.92 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 10, scale: 0.9 }}
-              transition={{ duration: 0.2 }}
-              className="glass border border-border rounded-full px-4 py-2 text-xs font-medium tracking-[0.15em] uppercase text-foreground whitespace-nowrap shadow-lg"
+              exit={{ opacity: 0, x: 10, scale: 0.92 }}
+              transition={{ duration: 0.18 }}
+              className="rounded-full px-4 py-2 text-[10px] font-semibold tracking-[0.18em] uppercase whitespace-nowrap"
+              style={{
+                background: "hsla(0,0%,4%,0.82)",
+                border: "1px solid hsla(0,0%,100%,0.1)",
+                color: "hsl(0,0%,75%)",
+                backdropFilter: "blur(16px)",
+                boxShadow: "0 4px 16px -4px hsla(0,0%,0%,0.5)",
+              }}
             >
-              Your Ritual Advisor
+              Ritual Advisor
             </motion.div>
           )}
         </AnimatePresence>
@@ -96,10 +103,10 @@ const VoiceAgent = () => {
           {/* Idle soft glow ring */}
           {!isConnected && (
             <motion.div
-              className="absolute inset-[-4px] rounded-full"
-              style={{ background: "radial-gradient(circle, hsla(168,76%,42%,0.08) 0%, transparent 70%)" }}
-              animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-[-6px] rounded-full"
+              style={{ background: "radial-gradient(circle, hsla(168,76%,42%,0.1) 0%, transparent 65%)" }}
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.9, 0.5] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
             />
           )}
 
@@ -109,36 +116,37 @@ const VoiceAgent = () => {
             style={{
               background: isConnected
                 ? "linear-gradient(135deg, hsl(168,76%,42%) 0%, hsl(42,80%,55%) 100%)"
-                : "linear-gradient(135deg, hsl(168,76%,35%) 0%, hsl(168,76%,42%) 60%, hsl(42,80%,50%) 100%)",
+                : "linear-gradient(145deg, hsl(168,76%,30%) 0%, hsl(168,76%,42%) 55%, hsl(168,60%,36%) 100%)",
               boxShadow: isConnected
-                ? "0 0 30px -5px hsla(168,76%,42%,0.6), 0 8px 32px -8px hsla(0,0%,0%,0.5)"
-                : "0 0 20px -8px hsla(168,76%,42%,0.4), 0 8px 24px -8px hsla(0,0%,0%,0.5)",
+                ? "0 0 32px -4px hsla(168,76%,42%,0.65), 0 8px 28px -8px hsla(0,0%,0%,0.6), inset 0 1px 0 hsla(255,100%,100%,0.12)"
+                : "0 0 22px -6px hsla(168,76%,42%,0.45), 0 8px 24px -8px hsla(0,0%,0%,0.55), inset 0 1px 0 hsla(255,100%,100%,0.1)",
             }}
           >
             {isOpen ? (
-              <X size={20} className="text-white" />
+              <X size={18} className="text-white" />
             ) : isConnected ? (
               /* Waveform bars when active */
               <div className="flex items-center gap-[3px]">
                 {[0, 1, 2, 3, 4].map((i) => (
                   <motion.div
                     key={i}
-                    className="w-[3px] rounded-full bg-white"
+                    className="w-[2.5px] rounded-full bg-white"
                     animate={isSpeaking
-                      ? { height: [4, 14 + i * 3, 4] }
-                      : { height: [4, 8, 4] }
+                      ? { height: [3, 13 + i * 2, 3] }
+                      : { height: [3, 7, 3] }
                     }
                     transition={{
-                      duration: isSpeaking ? 0.4 : 1.2,
+                      duration: isSpeaking ? 0.35 : 1.1,
                       repeat: Infinity,
-                      delay: i * 0.1,
+                      delay: i * 0.09,
                       ease: "easeInOut",
                     }}
                   />
                 ))}
               </div>
             ) : (
-              <span className="text-[11px] font-black text-white tracking-tight">OV</span>
+              /* Premium idle — just mic icon, no text */
+              <Mic size={18} className="text-white opacity-90" />
             )}
           </div>
         </motion.button>
@@ -172,9 +180,9 @@ const VoiceAgent = () => {
               <div className="flex items-center gap-3">
                 <div
                   className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: "linear-gradient(135deg, hsl(168,76%,42%) 0%, hsl(42,80%,55%) 100%)" }}
+                  style={{ background: "linear-gradient(135deg, hsl(168,76%,38%) 0%, hsl(168,76%,44%) 100%)", boxShadow: "0 2px 10px -3px hsla(168,76%,42%,0.45)" }}
                 >
-                  <span className="text-[10px] font-black text-white">OV</span>
+                  <Mic size={15} className="text-white opacity-90" />
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-foreground tracking-tight">Ritual Advisor</p>
