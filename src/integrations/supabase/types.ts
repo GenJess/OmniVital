@@ -77,6 +77,94 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          ritual_summary: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          ritual_summary?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          ritual_summary?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ritual_logs: {
+        Row: {
+          feeling_score: number
+          id: string
+          logged_at: string
+          notes: string | null
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          feeling_score?: number
+          id?: string
+          logged_at?: string
+          notes?: string | null
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          feeling_score?: number
+          id?: string
+          logged_at?: string
+          notes?: string | null
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ritual_logs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_rituals: {
+        Row: {
+          added_at: string
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_rituals_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
