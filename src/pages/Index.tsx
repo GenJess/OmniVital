@@ -17,15 +17,15 @@ const Index = () => {
         <CommunitySection />
       </main>
 
-      <footer className="py-10 px-6 border-t border-border">
-        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <footer className="py-8 px-6 border-t border-border/30">
+        <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <img src={logoMark} alt="OmniaVital" className="w-7 h-7 rounded-md" />
-            <p className="text-xs tracking-[0.2em] uppercase text-muted-foreground font-medium">
+            <img src={logoMark} alt="OmniaVital" className="w-6 h-6 rounded-md" />
+            <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground/60 font-medium">
               © 2026 OmniaVital
             </p>
           </div>
-          <p className="text-xs text-muted-foreground pb-2 md:pb-0">
+          <p className="text-[10px] text-muted-foreground/40 pb-2 md:pb-0">
             Premium Performance Wellness
           </p>
         </div>
