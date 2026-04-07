@@ -10,9 +10,7 @@ const pillars = [
       "Every ingredient formulated at research-informed levels to promote optimal results. No fairy-dusting, no proprietary blends — full-label transparency always.",
     stat: "100%",
     statLabel: "Label Transparency",
-    // Teal — brand primary
     accentHsl: "168 76% 42%",
-    accentLabel: "100%",
   },
   {
     icon: ShieldCheck,
@@ -22,9 +20,7 @@ const pillars = [
       "Independent lab verification promotes confidence in purity and potency. Every batch tested for heavy metals, contaminants, and ingredient accuracy.",
     stat: "3rd Party",
     statLabel: "Lab Certified",
-    // Cobalt blue — trust / purity
     accentHsl: "217 91% 60%",
-    accentLabel: "3rd Party",
   },
   {
     icon: Leaf,
@@ -34,9 +30,7 @@ const pillars = [
       "From ethical harvest to final capsule — our supply chain promotes sustainability and accountability. Zero fillers, binders, or artificial additives.",
     stat: "Zero",
     statLabel: "Fillers or Additives",
-    // Sage green — clean / organic
     accentHsl: "142 52% 48%",
-    accentLabel: "Zero",
   },
   {
     icon: Zap,
@@ -46,9 +40,7 @@ const pillars = [
       "Advanced delivery systems designed to promote maximum nutrient uptake. Because even the best formula needs to reach your cells to make a difference.",
     stat: "Advanced",
     statLabel: "Delivery Systems",
-    // Warm gold — accent / performance
     accentHsl: "42 80% 55%",
-    accentLabel: "Advanced",
   },
 ];
 
@@ -115,12 +107,12 @@ const ScienceSection = () => {
                 </div>
                 <div className="text-right">
                   <p
-                    className="text-lg font-black leading-none"
+                    className="text-2xl md:text-3xl font-black leading-none"
                     style={{ color: `hsl(${pillar.accentHsl})` }}
                   >
                     {pillar.stat}
                   </p>
-                  <p className="text-[9px] tracking-[0.2em] uppercase text-muted-foreground mt-0.5">
+                  <p className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground mt-1 font-medium">
                     {pillar.statLabel}
                   </p>
                 </div>
