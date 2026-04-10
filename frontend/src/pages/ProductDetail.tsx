@@ -1,92 +1,83 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { getProductBySlug, type Product } from "@/data/products";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, ShieldCheck, Leaf, FlaskConical } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Leaf, FlaskConical, Check, Sun, Sunset, Moon } from "lucide-react";
+import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
-import productMorning from "@/assets/product-morning.jpg";
-import productFocus from "@/assets/product-focus.jpg";
-import productEvening from "@/assets/product-evening.jpg";
 
-const productImages: Record<string, string> = {
-  "morning-routine": productMorning,
-  "focus-window": productFocus,
-  "evening-recovery": productEvening,
+const slotIcons: Record<string, typeof Sun> = {
+  morning: Sun,
+  midday: Sunset,
+  evening: Moon,
 };
-
-interface Product {
-  id: string;
-  name: string;
-  slug: string;
-  tagline: string;
-  category: string;
-  description: string;
-  price: number;
-  image_url: string | null;
-  bio_availability_text: string | null;
-  sourcing_text: string | null;
-  daily_ritual_text: string | null;
-}
 
 const ProductDetail = () => {
   const { slug } = useParams<{ slug: string }>();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const { user } = useAuth();
+  const [addingToRitual, setAddingToRitual] = useState(false);
+  const [alreadyInRitual, setAlreadyInRitual] = useState(false);
 
+  const product = slug ? getProductBySlug(slug) : undefined;
+
+  // Check if product is already in user's ritual
   useEffect(() => {
-    if (!slug) {
-      setNotFound(true);
-      setIsLoading(false);
+    if (!user || !product) return;
+    const checkRitual = async () => {
+      const { data } = await supabase
+        .from("user_rituals")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("product_id", product.id)
+        .maybeSingle();
+      setAlreadyInRitual(!!data);
+    };
+    checkRitual();
+  }, [user, product]);
+
+  const handleAddToRitual = async () => {
+    if (!user) {
+      toast.info("Sign in to add products to your ritual.");
       return;
     }
+    if (!product) return;
+    setAddingToRitual(true);
 
-    const fetchProduct = async () => {
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("products")
-          .select("*")
-          .eq("slug", slug)
-          .maybeSingle();
+    const { error } = await supabase.from("user_rituals").insert({
+      user_id: user.id,
+      product_id: product.id,
+      schedule_slot: product.schedule_slot,
+    });
 
-        if (error) throw error;
-
-        if (!data) {
-          setNotFound(true);
-        } else {
-          setProduct(data);
-        }
-      } catch (err) {
-        console.error("Failed to load product:", err);
-        setNotFound(true);
-      } finally {
-        setIsLoading(false);
+    if (error) {
+      if (error.code === "23505") {
+        toast.info("Already in your ritual.");
+        setAlreadyInRitual(true);
+      } else {
+        toast.error("Failed to add to ritual.");
       }
-    };
+    } else {
+      toast.success(`${product.name} added to your ritual`);
+      setAlreadyInRitual(true);
+    }
+    setAddingToRitual(false);
+  };
 
-    fetchProduct();
-  }, [slug]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (notFound || !product) {
+  if (!product) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
         <p className="text-muted-foreground">Product not found.</p>
-        <Link to="/" className="text-sm text-primary hover:underline">← Back to rituals</Link>
+        <Link to="/" className="text-sm text-primary hover:underline">&larr; Back to rituals</Link>
       </div>
     );
   }
 
-  const localImage = productImages[product.slug];
+  const colorPrimary = product.color_tag.primary;
+  const colorSecondary = product.color_tag.secondary;
+  const SlotIcon = slotIcons[product.schedule_slot] || Sun;
 
   return (
     <div className="min-h-screen bg-background">
@@ -112,25 +103,18 @@ const ProductDetail = () => {
               transition={{ duration: 0.6 }}
               className="relative aspect-square rounded-2xl overflow-hidden bg-card border border-border"
             >
-              {localImage ? (
-                <img
-                  src={localImage}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : product.image_url ? (
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-7xl font-bold text-muted-foreground/10">
-                    {product.name.charAt(0)}
-                  </span>
-                </div>
-              )}
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+              {/* Gradient overlay with product color */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: `linear-gradient(to top, ${colorPrimary}15, transparent 50%)`,
+                }}
+              />
             </motion.div>
 
             {/* Product info */}
@@ -140,24 +124,78 @@ const ProductDetail = () => {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="flex flex-col justify-center py-4"
             >
-              <p className="text-xs tracking-[0.4em] uppercase text-primary font-medium mb-3">
-                {product.category}
-              </p>
+              {/* Category + schedule */}
+              <div className="flex items-center gap-3 mb-4">
+                <span
+                  className="text-[10px] tracking-[0.3em] uppercase font-medium px-3 py-1 rounded-full border"
+                  style={{
+                    color: colorPrimary,
+                    borderColor: `${colorPrimary}40`,
+                    background: `${colorPrimary}10`,
+                  }}
+                >
+                  {product.category}
+                </span>
+                <span className="flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
+                  <SlotIcon size={12} />
+                  {product.schedule_slot}
+                </span>
+              </div>
+
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground tracking-tight mb-2">
                 {product.name}
               </h1>
               <p className="text-muted-foreground font-light text-base md:text-lg mb-4">
                 {product.tagline}
               </p>
-              <p className="text-3xl font-bold text-foreground mb-6">
-                ${Number(product.price).toFixed(2)}
+
+              {/* Hero ingredient */}
+              <p className="text-xs text-muted-foreground/60 tracking-[0.15em] uppercase mb-4">
+                Hero Ingredient:{" "}
+                <span className="text-foreground font-medium">{product.hero_ingredient}</span>
               </p>
+
+              <p className="text-3xl font-bold text-foreground mb-2">
+                ${product.price.toFixed(2)}
+                <span className="text-sm text-muted-foreground font-normal ml-1">/month</span>
+              </p>
+
+              {/* Dosage */}
+              <p className="text-xs text-muted-foreground mb-6">{product.dosage_text}</p>
+
               <p className="text-sm text-muted-foreground leading-relaxed mb-8 max-w-lg">
                 {product.description}
               </p>
 
-              <button className="w-full px-10 py-4 bg-primary text-primary-foreground font-semibold tracking-widest uppercase text-sm rounded-lg hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.01] transition-all duration-300 mb-6">
-                Add to Ritual
+              {/* Benefits */}
+              <div className="space-y-2.5 mb-8">
+                {product.benefit_bullets.map((b, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div
+                      className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                      style={{ background: `${colorPrimary}15`, border: `1px solid ${colorPrimary}30` }}
+                    >
+                      <Check size={10} style={{ color: colorPrimary }} />
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{b}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add to Ritual CTA */}
+              <button
+                onClick={handleAddToRitual}
+                disabled={addingToRitual || alreadyInRitual}
+                className="w-full px-10 py-4 font-semibold tracking-widest uppercase text-sm rounded-lg transition-all duration-300 mb-6 disabled:opacity-60"
+                style={{
+                  background: alreadyInRitual
+                    ? "hsl(var(--secondary))"
+                    : `linear-gradient(135deg, ${colorPrimary}, ${colorSecondary})`,
+                  color: alreadyInRitual ? "hsl(var(--muted-foreground))" : "white",
+                  boxShadow: alreadyInRitual ? "none" : `0 4px 24px -6px ${colorPrimary}55`,
+                }}
+              >
+                {alreadyInRitual ? "In Your Ritual" : addingToRitual ? "Adding..." : "Add to Ritual"}
               </button>
 
               {/* Trust badges */}
@@ -167,10 +205,7 @@ const ProductDetail = () => {
                   { icon: ShieldCheck, label: "3rd-Party Tested" },
                   { icon: Leaf, label: "Clean Sourced" },
                 ].map((badge) => (
-                  <div
-                    key={badge.label}
-                    className="flex items-center gap-2 text-xs text-muted-foreground"
-                  >
+                  <div key={badge.label} className="flex items-center gap-2 text-xs text-muted-foreground">
                     <badge.icon size={14} className="text-primary/70" />
                     {badge.label}
                   </div>
@@ -200,15 +235,25 @@ const ProductDetail = () => {
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="bio" className="pt-5 text-sm text-muted-foreground leading-relaxed">
-                  {product.bio_availability_text || "Clinical-grade bioavailability engineered for maximum absorption."}
+                  {product.bio_availability_text}
                 </TabsContent>
                 <TabsContent value="sourcing" className="pt-5 text-sm text-muted-foreground leading-relaxed">
-                  {product.sourcing_text || "Ethically sourced, third-party tested, traceable from origin to capsule."}
+                  {product.sourcing_text}
                 </TabsContent>
                 <TabsContent value="ritual" className="pt-5 text-sm text-muted-foreground leading-relaxed">
-                  {product.daily_ritual_text || "Integrate seamlessly into your daily protocol for sustained results."}
+                  {product.daily_ritual_text}
                 </TabsContent>
               </Tabs>
+
+              {/* Directions */}
+              <div className="mt-6 p-4 rounded-xl bg-secondary/30 border border-border">
+                <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-medium mb-2">
+                  Directions
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {product.directions_text}
+                </p>
+              </div>
             </motion.div>
           </div>
         </div>

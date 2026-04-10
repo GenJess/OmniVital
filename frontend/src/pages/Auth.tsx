@@ -88,8 +88,8 @@ const Auth = () => {
       {/* Header */}
       <div className="relative z-10 px-6 py-5 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3 group">
-          <img src={logoMark} alt="OmniaVital" className="w-8 h-8 rounded-lg" />
-          <span className="text-sm font-bold tracking-[0.15em] uppercase text-foreground">OmniaVital</span>
+          <img src={logoMark} alt="OmniVital" className="w-8 h-8 rounded-lg" />
+          <span className="text-sm font-bold tracking-[0.15em] uppercase text-foreground">OmniVital</span>
         </Link>
         <Link to="/" className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors tracking-[0.15em] uppercase">
           <ArrowLeft size={14} />
@@ -202,7 +202,7 @@ const Auth = () => {
           </form>
 
           <p className="text-center text-xs text-muted-foreground mt-6">
-            {mode === "signin" ? "New to OmniaVital?" : "Already a member?"}{" "}
+            {mode === "signin" ? "New to OmniVital?" : "Already a member?"}{" "}
             <button
               onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
               className="text-primary hover:text-primary/80 transition-colors"

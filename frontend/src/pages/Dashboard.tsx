@@ -14,29 +14,29 @@ import {
   Flame,
   MessageCircle,
   ChevronRight,
-  Leaf,
+  Sun,
+  Sunset,
+  Moon,
   Users,
   Send,
   Lock,
+  Pause,
+  Play,
 } from "lucide-react";
+import { PRODUCTS, getProductById, type Product as CatalogProduct } from "@/data/products";
 import logoMark from "@/assets/logo-mark.png";
 import VoiceAgent from "@/components/VoiceAgent";
-
-
-interface Product {
-  id: string;
-  name: string;
-  tagline: string;
-  category: string;
-  image_url: string | null;
-  slug: string;
-}
 
 interface UserRitual {
   id: string;
   product_id: string;
+  schedule_slot: string | null;
+  is_paused: boolean;
   added_at: string;
-  products: Product;
+}
+
+interface UserRitualWithProduct extends UserRitual {
+  product: CatalogProduct;
 }
 
 interface RitualLog {
@@ -46,19 +46,25 @@ interface RitualLog {
   feeling_score: number;
 }
 
+const slotMeta: Record<string, { label: string; icon: typeof Sun }> = {
+  morning: { label: "Morning", icon: Sun },
+  midday: { label: "Midday", icon: Sunset },
+  evening: { label: "Evening", icon: Moon },
+};
+
 const COLLECTIVE_TIPS = [
   {
     id: 1,
     tag: "Protocol",
     title: "The morning stack matters most.",
-    body: "Your cortisol peak is within 30–45 minutes of waking. That's the window to take your adaptogens and cognitive support. Stack them before coffee.",
-    author: "OmniaVital Protocol Team",
+    body: "Your cortisol peak is within 30-45 minutes of waking. That's the window to take your adaptogens and cognitive support. Stack them before coffee.",
+    author: "OmniVital Protocol Team",
   },
   {
     id: 2,
     tag: "Insight",
     title: "Consistency beats optimization.",
-    body: "A ritual taken daily at 70% optimization beats a perfect stack taken 3 days a week. Your body adapts to rhythms — honor them.",
+    body: "A ritual taken daily at 70% optimization beats a perfect stack taken 3 days a week. Your body adapts to rhythms - honor them.",
     author: "From The Collective",
   },
   {
@@ -66,7 +72,7 @@ const COLLECTIVE_TIPS = [
     tag: "Science",
     title: "Bioavailability is everything.",
     body: "Most people take high-quality supplements and absorb 30% of them. Take fat-soluble compounds with food. Take water-soluble on an empty stomach.",
-    author: "OmniaVital Research",
+    author: "OmniVital Research",
   },
 ];
 
@@ -75,14 +81,14 @@ const DAYS_OF_WEEK = ["M", "T", "W", "T", "F", "S", "S"];
 const Dashboard = () => {
   const { user, profile, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
-  const [rituals, setRituals] = useState<UserRitual[]>([]);
+  const [rituals, setRituals] = useState<UserRitualWithProduct[]>([]);
   const [todayLogs, setTodayLogs] = useState<RitualLog[]>([]);
   const [weekLogs, setWeekLogs] = useState<RitualLog[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
   const [dataLoading, setDataLoading] = useState(false);
   const [checkingIn, setCheckingIn] = useState<string | null>(null);
   const [addingProduct, setAddingProduct] = useState<string | null>(null);
   const [showAddPanel, setShowAddPanel] = useState(false);
+  const products = PRODUCTS; // Use static catalog
 
   const greeting = () => {
     const h = new Date().getHours();
@@ -102,11 +108,12 @@ const Dashboard = () => {
     const weekAgo = new Date(today);
     weekAgo.setDate(weekAgo.getDate() - 6);
 
-    const [ritualsRes, logsRes, weekLogsRes, productsRes] = await Promise.all([
+    const [ritualsRes, logsRes, weekLogsRes] = await Promise.all([
       supabase
         .from("user_rituals")
-        .select("*, products(*)")
-        .eq("user_id", user.id),
+        .select("*")
+        .eq("user_id", user.id)
+        .order("display_order", { ascending: true }),
       supabase
         .from("ritual_logs")
         .select("*")
@@ -117,13 +124,21 @@ const Dashboard = () => {
         .select("*")
         .eq("user_id", user.id)
         .gte("logged_at", weekAgo.toISOString()),
-      supabase.from("products").select("*"),
     ]);
 
-    if (ritualsRes.data) setRituals(ritualsRes.data as unknown as UserRitual[]);
+    if (ritualsRes.data) {
+      // Merge user_rituals with static product catalog
+      const enriched = (ritualsRes.data as UserRitual[])
+        .map((r) => {
+          const product = getProductById(r.product_id);
+          if (!product) return null;
+          return { ...r, product } as UserRitualWithProduct;
+        })
+        .filter(Boolean) as UserRitualWithProduct[];
+      setRituals(enriched);
+    }
     if (logsRes.data) setTodayLogs(logsRes.data);
     if (weekLogsRes.data) setWeekLogs(weekLogsRes.data);
-    if (productsRes.data) setProducts(productsRes.data);
     setDataLoading(false);
   };
 
@@ -144,7 +159,7 @@ const Dashboard = () => {
     if (error) {
       toast.error("Failed to log check-in.");
     } else {
-      toast.success("Ritual logged ✓");
+      toast.success("Ritual logged");
       await fetchData();
     }
     setCheckingIn(null);
@@ -158,6 +173,19 @@ const Dashboard = () => {
     }
   };
 
+  const handleTogglePause = async (ritualId: string, isPaused: boolean) => {
+    const { error } = await supabase
+      .from("user_rituals")
+      .update({ is_paused: !isPaused })
+      .eq("id", ritualId);
+    if (!error) {
+      setRituals((prev) =>
+        prev.map((r) => (r.id === ritualId ? { ...r, is_paused: !isPaused } : r))
+      );
+      toast.success(isPaused ? "Resumed" : "Paused");
+    }
+  };
+
   const handleAddProduct = async (productId: string) => {
     if (!user) return;
     const alreadyAdded = rituals.some((r) => r.product_id === productId);
@@ -166,14 +194,16 @@ const Dashboard = () => {
       return;
     }
     setAddingProduct(productId);
+    const prod = products.find((p) => p.id === productId);
     const { error } = await supabase.from("user_rituals").insert({
       user_id: user.id,
       product_id: productId,
+      schedule_slot: prod?.schedule_slot || "morning",
     });
     if (error) {
       toast.error("Failed to add product.");
     } else {
-      toast.success("Added to your ritual ✓");
+      toast.success("Added to your ritual");
       await fetchData();
       setShowAddPanel(false);
     }
@@ -202,6 +232,19 @@ const Dashboard = () => {
   const currentStreak = [...streakDays].reverse().findIndex((d) => !d);
   const streakCount = currentStreak === -1 ? 7 : currentStreak;
 
+  // Group rituals by schedule_slot
+  const activeRituals = rituals.filter((r) => !r.is_paused);
+  const pausedRituals = rituals.filter((r) => r.is_paused);
+  const grouped = {
+    morning: activeRituals.filter((r) => (r.schedule_slot || r.product.schedule_slot) === "morning"),
+    midday: activeRituals.filter((r) => (r.schedule_slot || r.product.schedule_slot) === "midday"),
+    evening: activeRituals.filter((r) => (r.schedule_slot || r.product.schedule_slot) === "evening"),
+  };
+
+  const todayCompletion = rituals.length > 0
+    ? Math.round((todayLogs.length / activeRituals.length) * 100) || 0
+    : 0;
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
@@ -224,15 +267,13 @@ const Dashboard = () => {
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border px-6 py-3">
         <div className="container mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <img src={logoMark} alt="OmniaVital" className="w-8 h-8 rounded-lg" />
+            <img src={logoMark} alt="OmniVital" className="w-8 h-8 rounded-lg" />
             <span className="text-sm font-bold tracking-[0.15em] uppercase text-foreground hidden sm:block">
-              OmniaVital
+              OmniVital
             </span>
           </Link>
 
-          {/* Right row — all in one line */}
           <div className="flex items-center gap-2.5">
-            {/* OVO G gold badge */}
             <div
               className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full border"
               style={{
@@ -240,15 +281,11 @@ const Dashboard = () => {
                 borderColor: "hsla(42,80%,55%,0.35)",
               }}
             >
-              <span
-                className="text-[9px] font-black tracking-[0.25em] uppercase"
-                style={{ color: "hsl(42,80%,60%)" }}
-              >
+              <span className="text-[9px] font-black tracking-[0.25em] uppercase" style={{ color: "hsl(42,80%,60%)" }}>
                 OVO·G
               </span>
             </div>
 
-            {/* Avatar + name */}
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
               <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-[10px] font-black text-accent-foreground">
                 {firstName[0]?.toUpperCase()}
@@ -258,7 +295,6 @@ const Dashboard = () => {
               </span>
             </div>
 
-            {/* Sign out as a styled button */}
             <button
               onClick={handleSignOut}
               className="flex items-center gap-1.5 text-[10px] font-semibold tracking-[0.18em] uppercase text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg border border-transparent hover:border-border"
@@ -271,7 +307,7 @@ const Dashboard = () => {
       </header>
 
       <main className="container mx-auto px-6 py-10 max-w-4xl space-y-10">
-        {/* Greeting */}
+        {/* Greeting + Quick stats */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -282,9 +318,34 @@ const Dashboard = () => {
             {greeting()}, {firstName}.
           </h1>
           <p className="text-muted-foreground mt-1">
-            {profile?.ritual_summary || "Your ritual is ready. Let's optimize."}
+            {rituals.length > 0
+              ? `${activeRituals.length} product${activeRituals.length !== 1 ? "s" : ""} in your ritual. ${todayCompletion}% complete today.`
+              : "Build your ritual to get started."}
           </p>
         </motion.div>
+
+        {/* Quick stats row */}
+        {rituals.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.05 }}
+            className="grid grid-cols-3 gap-4"
+          >
+            <div className="glass rounded-xl border border-border p-4 text-center">
+              <p className="text-2xl font-bold text-foreground">{streakCount}</p>
+              <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mt-1">Day Streak</p>
+            </div>
+            <div className="glass rounded-xl border border-border p-4 text-center">
+              <p className="text-2xl font-bold text-primary">{todayCompletion}%</p>
+              <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mt-1">Today</p>
+            </div>
+            <div className="glass rounded-xl border border-border p-4 text-center">
+              <p className="text-2xl font-bold text-accent">{activeRituals.length}</p>
+              <p className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mt-1">Active</p>
+            </div>
+          </motion.div>
+        )}
 
         {/* Streak */}
         <motion.div
@@ -300,7 +361,9 @@ const Dashboard = () => {
                 7-Day Streak
               </h2>
             </div>
-            <span className="text-2xl font-bold text-foreground">{streakCount}<span className="text-sm font-normal text-muted-foreground ml-1">days</span></span>
+            <span className="text-2xl font-bold text-foreground">
+              {streakCount}<span className="text-sm font-normal text-muted-foreground ml-1">days</span>
+            </span>
           </div>
           <div className="flex gap-2">
             {streakDays.map((active, i) => (
@@ -318,19 +381,16 @@ const Dashboard = () => {
           </div>
         </motion.div>
 
-        {/* Ritual Stack */}
+        {/* Ritual Stack — grouped by time of day */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.15 }}
         >
           <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2">
-              <Leaf size={18} className="text-primary" />
-              <h2 className="text-sm font-semibold tracking-[0.1em] uppercase text-foreground">
-                Your Ritual Stack
-              </h2>
-            </div>
+            <h2 className="text-sm font-semibold tracking-[0.1em] uppercase text-foreground">
+              Your Ritual Stack
+            </h2>
             <button
               onClick={() => setShowAddPanel(!showAddPanel)}
               className="flex items-center gap-1.5 text-xs font-medium tracking-[0.1em] uppercase text-primary hover:text-primary/80 transition-colors"
@@ -351,17 +411,29 @@ const Dashboard = () => {
               <p className="text-xs text-muted-foreground tracking-[0.1em] uppercase mb-3">Choose a product to add</p>
               {products
                 .filter((p) => !rituals.some((r) => r.product_id === p.id))
-                .map((product) => (
-                  <button
-                    key={product.id}
-                    onClick={() => handleAddProduct(product.id)}
-                    disabled={addingProduct === product.id}
-                    className="w-full flex items-center justify-between px-4 py-3 bg-secondary/50 hover:bg-secondary rounded-xl border border-border transition-all text-left group"
-                  >
-                    <span className="text-sm text-foreground font-medium">{product.name}</span>
-                    <ChevronRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
-                  </button>
-                ))}
+                .map((product) => {
+                  const colorPrimary = product.color_tag?.primary || "#0D9488";
+                  return (
+                    <button
+                      key={product.id}
+                      onClick={() => handleAddProduct(product.id)}
+                      disabled={addingProduct === product.id}
+                      className="w-full flex items-center justify-between px-4 py-3 bg-secondary/50 hover:bg-secondary rounded-xl border border-border transition-all text-left group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ background: colorPrimary }}
+                        />
+                        <div>
+                          <span className="text-sm text-foreground font-medium">{product.name}</span>
+                          <span className="text-[10px] text-muted-foreground ml-2">{product.schedule_slot}</span>
+                        </div>
+                      </div>
+                      <ChevronRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                    </button>
+                  );
+                })}
               {products.filter((p) => !rituals.some((r) => r.product_id === p.id)).length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-2">All products are in your ritual.</p>
               )}
@@ -373,73 +445,151 @@ const Dashboard = () => {
               <Sparkles size={28} className="text-muted-foreground mx-auto mb-3" />
               <p className="text-sm text-muted-foreground">Your ritual stack is empty.</p>
               <p className="text-xs text-muted-foreground mt-1">Add products above or talk to your advisor.</p>
+              <Link
+                to="/"
+                className="inline-flex items-center gap-2 mt-4 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                Browse products <ChevronRight size={12} />
+              </Link>
             </div>
           ) : (
-            <div className="space-y-3">
-              {rituals.map((ritual, i) => {
-                const logged = isLoggedToday(ritual.product_id);
+            <div className="space-y-8">
+              {(["morning", "midday", "evening"] as const).map((slot) => {
+                const slotRituals = grouped[slot];
+                if (slotRituals.length === 0) return null;
+                const meta = slotMeta[slot];
+
                 return (
-                  <motion.div
-                    key={ritual.id}
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.07 }}
-                    className={`glass rounded-2xl border transition-all duration-300 p-5 ${
-                      logged ? "border-primary/30 bg-primary/5" : "border-border"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-center gap-4 flex-1">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${logged ? "bg-primary/20" : "bg-secondary"}`}>
-                          {logged
-                            ? <CheckCircle2 size={20} className="text-primary" />
-                            : <Circle size={20} className="text-muted-foreground" />
-                          }
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">{ritual.products.name}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{ritual.products.tagline}</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => handleRemoveRitual(ritual.id)}
-                        className="text-[10px] tracking-[0.1em] uppercase text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
-                      >
-                        Remove
-                      </button>
+                  <div key={slot}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <meta.icon size={14} className="text-primary/70" />
+                      <span className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground font-medium">
+                        {meta.label}
+                      </span>
                     </div>
+                    <div className="space-y-3">
+                      {slotRituals.map((ritual, i) => {
+                        const logged = isLoggedToday(ritual.product_id);
+                        const colorPrimary = ritual.product.color_tag?.primary || "#0D9488";
+                        return (
+                          <motion.div
+                            key={ritual.id}
+                            initial={{ opacity: 0, x: -16 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.07 }}
+                            className={`glass rounded-2xl border transition-all duration-300 p-5 ${
+                              logged ? "border-primary/30 bg-primary/5" : "border-border"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex items-center gap-4 flex-1">
+                                <div
+                                  className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${logged ? "bg-primary/20" : "bg-secondary"}`}
+                                  style={logged ? {} : { borderLeft: `3px solid ${colorPrimary}` }}
+                                >
+                                  {logged
+                                    ? <CheckCircle2 size={20} className="text-primary" />
+                                    : <Circle size={20} className="text-muted-foreground" />
+                                  }
+                                </div>
+                                <div>
+                                  <Link
+                                    to={`/product/${ritual.product.slug}`}
+                                    className="text-sm font-semibold text-foreground hover:text-primary transition-colors"
+                                  >
+                                    {ritual.product.name}
+                                  </Link>
+                                  <p className="text-xs text-muted-foreground mt-0.5">{ritual.product.tagline}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleTogglePause(ritual.id, ritual.is_paused)}
+                                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                                  title={ritual.is_paused ? "Resume" : "Pause"}
+                                >
+                                  {ritual.is_paused ? <Play size={12} /> : <Pause size={12} />}
+                                </button>
+                                <button
+                                  onClick={() => handleRemoveRitual(ritual.id)}
+                                  className="text-[10px] tracking-[0.1em] uppercase text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
 
-                    {!logged && (
-                      <div className="mt-4 pt-4 border-t border-border">
-                        <p className="text-[10px] text-muted-foreground tracking-[0.15em] uppercase mb-2.5">
-                          Log today — How do you feel?
-                        </p>
-                        <div className="flex gap-2">
-                          {[1, 2, 3, 4, 5].map((score) => (
-                            <button
-                              key={score}
-                              onClick={() => handleCheckIn(ritual.product_id, score)}
-                              disabled={checkingIn === ritual.product_id}
-                              className="flex-1 py-2 rounded-lg bg-secondary/50 border border-border hover:border-primary hover:bg-primary/10 text-xs font-semibold text-muted-foreground hover:text-primary transition-all duration-200 flex items-center justify-center gap-1"
-                            >
-                              <Star size={10} className={score >= 4 ? "text-accent" : ""} />
-                              {score}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                            {!logged && (
+                              <div className="mt-4 pt-4 border-t border-border">
+                                <p className="text-[10px] text-muted-foreground tracking-[0.15em] uppercase mb-2.5">
+                                  Log today — How do you feel?
+                                </p>
+                                <div className="flex gap-2">
+                                  {[1, 2, 3, 4, 5].map((score) => (
+                                    <button
+                                      key={score}
+                                      onClick={() => handleCheckIn(ritual.product_id, score)}
+                                      disabled={checkingIn === ritual.product_id}
+                                      className="flex-1 py-2 rounded-lg bg-secondary/50 border border-border hover:border-primary hover:bg-primary/10 text-xs font-semibold text-muted-foreground hover:text-primary transition-all duration-200 flex items-center justify-center gap-1"
+                                    >
+                                      <Star size={10} className={score >= 4 ? "text-accent" : ""} />
+                                      {score}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
 
-                    {logged && (
-                      <div className="mt-3 pt-3 border-t border-primary/10">
-                        <p className="text-xs text-primary font-medium flex items-center gap-1.5">
-                          <CheckCircle2 size={12} /> Logged today
-                        </p>
-                      </div>
-                    )}
-                  </motion.div>
+                            {logged && (
+                              <div className="mt-3 pt-3 border-t border-primary/10">
+                                <p className="text-xs text-primary font-medium flex items-center gap-1.5">
+                                  <CheckCircle2 size={12} /> Logged today
+                                </p>
+                              </div>
+                            )}
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               })}
+
+              {/* Paused products */}
+              {pausedRituals.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Pause size={14} className="text-muted-foreground/50" />
+                    <span className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground/50 font-medium">
+                      Paused
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {pausedRituals.map((ritual) => (
+                      <div
+                        key={ritual.id}
+                        className="glass rounded-xl border border-border/50 p-4 opacity-50 flex items-center justify-between"
+                      >
+                        <span className="text-sm text-muted-foreground">{ritual.product.name}</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleTogglePause(ritual.id, ritual.is_paused)}
+                            className="text-[10px] tracking-[0.1em] uppercase text-primary hover:text-primary/80 transition-colors"
+                          >
+                            Resume
+                          </button>
+                          <button
+                            onClick={() => handleRemoveRitual(ritual.id)}
+                            className="text-[10px] tracking-[0.1em] uppercase text-muted-foreground hover:text-destructive transition-colors"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </motion.div>
@@ -498,13 +648,12 @@ const Dashboard = () => {
           </div>
 
           <div className="glass rounded-2xl border border-border overflow-hidden">
-            {/* Chat messages area */}
             <div className="p-5 space-y-4 min-h-[240px]">
               {[
-                { initials: "MR", name: "Marcus R.", time: "2h ago", msg: "Day 14 on the morning stack. Sleep quality has been noticeably better. Anyone else notice this?", badge: true },
-                { initials: "SK", name: "Sofia K.", time: "1h ago", msg: "Yes! Especially stacking the adaptogens before coffee like the protocol says. Total game changer for cortisol.", badge: false },
-                { initials: "JL", name: "James L.", time: "45m ago", msg: "How long before most people start feeling the cognitive stack working? I'm on day 5.", badge: true },
-                { initials: "OV", name: "OmniaVital Team", time: "30m ago", msg: "Most members report noticing cognitive support around days 7–14 as the compounds build in your system. Consistency is everything 🌿", badge: false, isTeam: true },
+                { initials: "MR", name: "Marcus R.", time: "2h ago", msg: "Day 14 on OV Drive + OV Adapt stack. Sleep quality has been noticeably better. Anyone else notice this?", badge: true },
+                { initials: "SK", name: "Sofia K.", time: "1h ago", msg: "Yes! Especially pairing OV Bright at midday — total game changer for afternoon energy dips.", badge: false },
+                { initials: "JL", name: "James L.", time: "45m ago", msg: "How long before OV Quiet Focus starts working? I'm on day 5.", badge: true },
+                { initials: "OV", name: "OmniVital Team", time: "30m ago", msg: "Most members report noticing cognitive support around days 7-14 as the compounds build in your system. Consistency is everything.", badge: false, isTeam: true },
               ].map((msg, i) => (
                 <motion.div
                   key={i}
@@ -543,7 +692,6 @@ const Dashboard = () => {
               ))}
             </div>
 
-            {/* Chat input */}
             <div className="border-t border-border p-4 flex items-center gap-3">
               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-[9px] font-black text-accent-foreground flex-shrink-0">
                 {firstName[0]?.toUpperCase()}
@@ -558,11 +706,6 @@ const Dashboard = () => {
                   <Send size={14} />
                 </button>
               </div>
-            </div>
-
-            {/* Coming soon overlay */}
-            <div className="relative">
-              <div className="absolute inset-x-0 -top-28 h-28 bg-gradient-to-t from-card/80 to-transparent pointer-events-none" />
             </div>
           </div>
 
@@ -599,4 +742,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

@@ -101,3 +101,115 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "White label health and wellness website (OmniVital) launch readiness. Phase 1: Replace 3 old products with 6 new launch products, fix brand name, create Supabase schema, update landing page and PDPs."
+
+backend:
+  - task: "FastAPI server status endpoint"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Basic status endpoint, not changed"
+        - working: true
+          agent: "testing"
+          comment: "Tested all backend endpoints successfully. GET /api/ returns Hello World, GET /api/status returns status checks list, POST /api/status creates new status checks with MongoDB persistence. All endpoints responding correctly at https://white-wellness.preview.emergentagent.com/api"
+
+frontend:
+  - task: "Landing page hero section"
+    implemented: true
+    working: true
+    file: "frontend/src/components/HeroSection.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Updated tagline, hero copy. Brand renamed to OmniVital."
+
+  - task: "Product catalog - RitualGrid (6 products, 3 time slots)"
+    implemented: true
+    working: true
+    file: "frontend/src/components/RitualGrid.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "6 products from static catalog shown in morning/midday/evening groups. Supabase PostgREST cache was stale so switched to static data."
+
+  - task: "Product detail pages (PDPs)"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/ProductDetail.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "All 6 PDPs working with full detail: benefits, bio-availability, sourcing, ritual tabs, directions. Add to Ritual CTA works with Supabase."
+
+  - task: "Dashboard - ritual stack management"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/Dashboard.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Dashboard shows user rituals grouped by morning/midday/evening, streak tracking, daily check-in, add/remove/pause products."
+
+  - task: "Auth (Supabase)"
+    implemented: true
+    working: true
+    file: "frontend/src/pages/Auth.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Supabase auth, brand name updated"
+
+  - task: "Supabase schema (products, profiles, user_rituals, ritual_logs, email_signups)"
+    implemented: true
+    working: true
+    file: "supabase migrations"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "All tables created via Supabase MCP migrations with RLS policies. Products seeded."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Product catalog - RitualGrid"
+    - "Product detail pages"
+    - "Navigation between pages"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "main"
+      message: "Phase 1 complete. Replaced old 3-product catalog with 6 new launch products (OV Drive, OV Adapt, OV Bright, OV Quiet Focus, OV Neuro Night, OV Cortex). Created Supabase schema. Updated brand from OmniaVital to OmniVital. Products shown in morning/midday/evening groupings. Static catalog used due to Supabase PostgREST cache delay. PDPs fully functional. Dashboard shows ritual management with check-ins."
+    - agent: "testing"
+      message: "Backend testing completed successfully. All FastAPI endpoints working correctly: GET /api/ (Hello World), GET /api/status (returns status checks), POST /api/status (creates status checks with MongoDB persistence). Backend is fully functional at production URL. No issues found."

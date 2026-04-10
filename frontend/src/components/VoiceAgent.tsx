@@ -74,7 +74,7 @@ const VoiceAgent = () => {
   const { user, profile } = useAuth();
 
   const conversation = useConversation({
-    onConnect: () => console.log("Connected to OmniaVital agent"),
+    onConnect: () => console.log("Connected to OmniVital agent"),
     onDisconnect: () => console.log("Disconnected from agent"),
     onError: (error) => console.error("Agent error:", error),
   });

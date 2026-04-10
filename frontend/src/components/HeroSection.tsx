@@ -50,7 +50,7 @@ const HeroSection = () => {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="text-[10px] tracking-[0.5em] uppercase text-primary font-semibold mb-8"
         >
-          AI-Personalized Wellness
+          Premium Performance Wellness
         </motion.p>
 
         <motion.h1
@@ -61,7 +61,7 @@ const HeroSection = () => {
         >
           Your Ritual,
           <br />
-          <span className="text-gradient">Intelligent</span> by Design.
+          <span className="text-gradient">Precision</span> Built.
         </motion.h1>
 
         {/* Short, punchy subtitle — max two lines */}
@@ -71,9 +71,9 @@ const HeroSection = () => {
           transition={{ duration: 0.7, delay: 0.62 }}
           className="text-sm md:text-base text-muted-foreground font-light tracking-wide max-w-sm mx-auto leading-relaxed mb-14"
         >
-          Protocols built around you.
+          Six precision formulas. Three daily windows.
           <br />
-          Refined through every conversation.
+          Engineered for how you actually perform.
         </motion.p>
 
         {/* CTAs */}

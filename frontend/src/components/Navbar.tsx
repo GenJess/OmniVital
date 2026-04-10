@@ -44,7 +44,7 @@ const Navbar = () => {
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
           <Link to="/" className="group flex items-center gap-3">
           <div className="relative overflow-hidden rounded-lg">
-              <img src={logoMark} alt="OmniaVital" className="w-8 h-8 rounded-lg object-cover relative z-10" />
+              <img src={logoMark} alt="OmniVital" className="w-8 h-8 rounded-lg object-cover relative z-10" />
               {/* Light-shine sweep — moves left→right on hover */}
               <div
                 className="absolute inset-0 rounded-lg -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out pointer-events-none z-20"
@@ -59,7 +59,7 @@ const Navbar = () => {
               />
             </div>
             <span className="text-sm font-bold tracking-[0.2em] uppercase text-foreground hidden lg:block">
-              OmniaVital
+              OmniVital
             </span>
           </Link>
 
@@ -151,7 +151,7 @@ const Navbar = () => {
             >
               <X size={24} />
             </button>
-            <img src={logoMark} alt="OmniaVital" className="w-16 h-16 rounded-xl mb-10" />
+            <img src={logoMark} alt="OmniVital" className="w-16 h-16 rounded-xl mb-10" />
             <div className="flex flex-col items-center gap-8">
               {navLinks.map((link, i) => (
                 <motion.a

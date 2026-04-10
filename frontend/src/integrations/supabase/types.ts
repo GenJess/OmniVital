@@ -7,8 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
@@ -34,97 +32,124 @@ export type Database = {
       }
       products: {
         Row: {
-          bio_availability_text: string | null
-          category: string
-          created_at: string
-          daily_ritual_text: string | null
-          description: string
           id: string
-          image_url: string | null
           name: string
-          price: number
           slug: string
-          sourcing_text: string | null
           tagline: string
+          category: string
+          schedule_slot: string
+          description: string
+          short_description: string | null
+          price: number
+          image_url: string | null
+          hero_ingredient: string | null
+          dosage_text: string | null
+          directions_text: string | null
+          benefit_bullets: Json
+          bio_availability_text: string | null
+          sourcing_text: string | null
+          daily_ritual_text: string | null
+          color_tag: Json
+          display_order: number
+          active: boolean
+          created_at: string
         }
         Insert: {
-          bio_availability_text?: string | null
-          category: string
-          created_at?: string
-          daily_ritual_text?: string | null
-          description: string
           id?: string
-          image_url?: string | null
           name: string
-          price: number
           slug: string
-          sourcing_text?: string | null
           tagline: string
+          category: string
+          schedule_slot?: string
+          description: string
+          short_description?: string | null
+          price?: number
+          image_url?: string | null
+          hero_ingredient?: string | null
+          dosage_text?: string | null
+          directions_text?: string | null
+          benefit_bullets?: Json
+          bio_availability_text?: string | null
+          sourcing_text?: string | null
+          daily_ritual_text?: string | null
+          color_tag?: Json
+          display_order?: number
+          active?: boolean
+          created_at?: string
         }
         Update: {
-          bio_availability_text?: string | null
-          category?: string
-          created_at?: string
-          daily_ritual_text?: string | null
-          description?: string
           id?: string
-          image_url?: string | null
           name?: string
-          price?: number
           slug?: string
-          sourcing_text?: string | null
           tagline?: string
+          category?: string
+          schedule_slot?: string
+          description?: string
+          short_description?: string | null
+          price?: number
+          image_url?: string | null
+          hero_ingredient?: string | null
+          dosage_text?: string | null
+          directions_text?: string | null
+          benefit_bullets?: Json
+          bio_availability_text?: string | null
+          sourcing_text?: string | null
+          daily_ritual_text?: string | null
+          color_tag?: Json
+          display_order?: number
+          active?: boolean
+          created_at?: string
         }
         Relationships: []
       }
       profiles: {
         Row: {
-          created_at: string
-          full_name: string | null
           id: string
+          full_name: string | null
           ritual_summary: string | null
+          created_at: string
           updated_at: string
         }
         Insert: {
-          created_at?: string
-          full_name?: string | null
           id: string
+          full_name?: string | null
           ritual_summary?: string | null
+          created_at?: string
           updated_at?: string
         }
         Update: {
-          created_at?: string
-          full_name?: string | null
           id?: string
+          full_name?: string | null
           ritual_summary?: string | null
+          created_at?: string
           updated_at?: string
         }
         Relationships: []
       }
       ritual_logs: {
         Row: {
-          feeling_score: number
           id: string
-          logged_at: string
-          notes: string | null
-          product_id: string
           user_id: string
+          product_id: string
+          feeling_score: number
+          notes: string | null
+          logged_at: string
         }
         Insert: {
-          feeling_score?: number
           id?: string
-          logged_at?: string
-          notes?: string | null
-          product_id: string
           user_id: string
+          product_id: string
+          feeling_score?: number
+          notes?: string | null
+          logged_at?: string
         }
         Update: {
-          feeling_score?: number
           id?: string
-          logged_at?: string
-          notes?: string | null
-          product_id?: string
           user_id?: string
+          product_id?: string
+          feeling_score?: number
+          notes?: string | null
+          logged_at?: string
         }
         Relationships: [
           {
@@ -138,22 +163,31 @@ export type Database = {
       }
       user_rituals: {
         Row: {
-          added_at: string
           id: string
-          product_id: string
           user_id: string
+          product_id: string
+          schedule_slot: string | null
+          is_paused: boolean
+          display_order: number
+          added_at: string
         }
         Insert: {
-          added_at?: string
           id?: string
-          product_id: string
           user_id: string
+          product_id: string
+          schedule_slot?: string | null
+          is_paused?: boolean
+          display_order?: number
+          added_at?: string
         }
         Update: {
-          added_at?: string
           id?: string
-          product_id?: string
           user_id?: string
+          product_id?: string
+          schedule_slot?: string | null
+          is_paused?: boolean
+          display_order?: number
+          added_at?: string
         }
         Relationships: [
           {
