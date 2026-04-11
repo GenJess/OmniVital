@@ -8,10 +8,10 @@ import Index from "./pages/Index";
 import ProductDetail from "./pages/ProductDetail";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import Advisor from "./pages/Advisor";
-import Community from "./pages/Community";
-import Checkout from "./pages/Checkout";
+import CollectiveLayout from "./layouts/CollectiveLayout";
+import CollectiveDashboard from "./pages/collective/CollectiveDashboard";
+import CollectiveCommunity from "./pages/collective/CollectiveCommunity";
+import CollectiveProtocol from "./pages/collective/CollectiveProtocol";
 
 const queryClient = new QueryClient();
 
@@ -36,31 +36,45 @@ function AppRoutes() {
       <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/product/:slug" element={<ProductDetail />} />
-      <Route path="/community" element={<Community />} />
+
+      {/* The Collective Portal — protected */}
       <Route
-        path="/dashboard"
+        path="/collective"
         element={
           <RequireAuth>
-            <Dashboard />
+            <CollectiveLayout>
+              <CollectiveDashboard />
+            </CollectiveLayout>
           </RequireAuth>
         }
       />
       <Route
-        path="/advisor"
+        path="/collective/community"
         element={
           <RequireAuth>
-            <Advisor />
+            <CollectiveLayout>
+              <CollectiveCommunity />
+            </CollectiveLayout>
           </RequireAuth>
         }
       />
       <Route
-        path="/checkout"
+        path="/collective/protocol"
         element={
           <RequireAuth>
-            <Checkout />
+            <CollectiveLayout>
+              <CollectiveProtocol />
+            </CollectiveLayout>
           </RequireAuth>
         }
       />
+
+      {/* Legacy redirects */}
+      <Route path="/dashboard" element={<Navigate to="/collective" replace />} />
+      <Route path="/advisor" element={<Navigate to="/collective" replace />} />
+      <Route path="/community" element={<Navigate to="/collective/community" replace />} />
+      <Route path="/checkout" element={<Navigate to="/collective/protocol" replace />} />
+
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

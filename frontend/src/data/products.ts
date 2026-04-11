@@ -36,8 +36,7 @@ export const PRODUCTS: Product[] = [
       "OV Drive is engineered for people who want sustained energy without the crash. Built around clinically studied adaptogens and B-vitamin cofactors, Drive supports mitochondrial function and natural ATP production \u2014 giving you clean, caffeine-free alertness that lasts from morning through midday without jitters or dependency.",
     short_description: "Clean energy and sustained alertness without caffeine.",
     price: 64,
-    image_url:
-      "https://images.unsplash.com/photo-1636040015382-1f1bd1927384?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwxfHxzdXBwbGVtZW50JTIwY2Fwc3VsZXN8ZW58MHx8fGJsYWNrfDE3NzU4MjQxOTZ8MA&ixlib=rb-4.1.0&q=85",
+    image_url: "https://images.unsplash.com/photo-1704018731170-f30899f60917?w=800&h=800&fit=crop&crop=center&q=80",
     hero_ingredient: "Cordyceps Militaris",
     dosage_text: "2 capsules daily",
     directions_text:
@@ -67,11 +66,9 @@ export const PRODUCTS: Product[] = [
     schedule_slot: "morning",
     description:
       "OV Adapt is designed for the high-performer navigating sustained cognitive and physical load. Combining KSM-66 Ashwagandha with Rhodiola rosea and Eleuthero, Adapt modulates the HPA axis to support your stress response while maintaining energy output \u2014 helping you stay sharp and composed when demands increase.",
-    short_description:
-      "Stress resilience and sustained performance when it matters.",
+    short_description: "Stress resilience and sustained performance when it matters.",
     price: 68,
-    image_url:
-      "https://images.unsplash.com/photo-1655976515592-ade289fd4881?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwzfHxzdXBwbGVtZW50JTIwY2Fwc3VsZXN8ZW58MHx8fGJsYWNrfDE3NzU4MjQxOTZ8MA&ixlib=rb-4.1.0&q=85",
+    image_url: "https://images.unsplash.com/photo-1596177827808-4d338c4145f7?w=800&h=800&fit=crop&crop=center&q=80",
     hero_ingredient: "KSM-66 Ashwagandha",
     dosage_text: "2 capsules daily",
     directions_text:
@@ -101,11 +98,9 @@ export const PRODUCTS: Product[] = [
     schedule_slot: "midday",
     description:
       "OV Bright targets the neurochemical foundations of emotional balance. With clinically relevant doses of saffron extract (affron\u00ae), magnesium L-threonate, and L-theanine, Bright supports serotonergic and GABAergic pathways \u2014 promoting a calmer, more stable emotional baseline without sedation or cognitive dulling.",
-    short_description:
-      "Balanced mood and emotional steadiness throughout the day.",
+    short_description: "Balanced mood and emotional steadiness throughout the day.",
     price: 72,
-    image_url:
-      "https://images.unsplash.com/photo-1596177582967-a5d143a41237?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHwyfHxzdXBwbGVtZW50JTIwY2Fwc3VsZXN8ZW58MHx8fGJsYWNrfDE3NzU4MjQxOTZ8MA&ixlib=rb-4.1.0&q=85",
+    image_url: "https://images.unsplash.com/photo-1596177582967-a5d143a41237?w=800&h=800&fit=crop&crop=center&q=80",
     hero_ingredient: "affron\u00ae Saffron Extract",
     dosage_text: "2 capsules daily",
     directions_text:
@@ -135,11 +130,9 @@ export const PRODUCTS: Product[] = [
     schedule_slot: "midday",
     description:
       "OV Quiet Focus is built for the thinker who needs depth without distraction. Combining lion\u2019s mane mushroom with CDP-choline (Cognizin\u00ae) and L-theanine, Quiet Focus supports acetylcholine synthesis and NGF production \u2014 enabling calm, sustained concentration without the overstimulation of traditional nootropics.",
-    short_description:
-      "Deep, calm focus and sustained cognitive clarity.",
+    short_description: "Deep, calm focus and sustained cognitive clarity.",
     price: 66,
-    image_url:
-      "https://images.unsplash.com/photo-1593067264798-8ad7ea88948a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzJ8MHwxfHNlYXJjaHw0fHxzdXBwbGVtZW50JTIwY2Fwc3VsZXN8ZW58MHx8fGJsYWNrfDE3NzU4MjQxOTZ8MA&ixlib=rb-4.1.0&q=85",
+    image_url: "https://images.unsplash.com/photo-1704018731115-cdec06f3f067?w=800&h=800&fit=crop&crop=center&q=80",
     hero_ingredient: "Cognizin\u00ae CDP-Choline",
     dosage_text: "2 capsules daily",
     directions_text:
@@ -169,11 +162,9 @@ export const PRODUCTS: Product[] = [
     schedule_slot: "evening",
     description:
       "OV Neuro Night goes beyond basic sleep support. Combining magnesium glycinate, phosphatidylserine, and tart cherry extract, Neuro Night targets both sleep architecture and overnight neural recovery \u2014 supporting deeper slow-wave sleep, cortisol clearance, and the glymphatic processes that restore cognitive function overnight.",
-    short_description:
-      "Deep sleep and overnight neural restoration.",
+    short_description: "Deep sleep and overnight neural restoration.",
     price: 74,
-    image_url:
-      "https://images.unsplash.com/photo-1529627217121-7f98e892cc4e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA4Mzl8MHwxfHNlYXJjaHwzfHxwaWxsc3xlbnwwfHx8YmxhY2t8MTc3NTgyNDIwNXww&ixlib=rb-4.1.0&q=85",
+    image_url: "https://images.unsplash.com/photo-1704018731280-6617b0ca1dbe?w=800&h=800&fit=crop&crop=center&q=80",
     hero_ingredient: "Magnesium Glycinate",
     dosage_text: "2 capsules daily",
     directions_text:
@@ -203,11 +194,9 @@ export const PRODUCTS: Product[] = [
     schedule_slot: "evening",
     description:
       "OV Cortex is the executive-grade supplement for high-stakes days. Combining Bacopa monnieri, alpha-GPC, and phosphatidylserine, Cortex supports working memory, executive function, and cortisol modulation \u2014 helping you maintain composure and cognitive clarity when pressure is highest.",
-    short_description:
-      "Executive-level cognitive support for high-pressure moments.",
+    short_description: "Executive-level cognitive support for high-pressure moments.",
     price: 78,
-    image_url:
-      "https://images.unsplash.com/photo-1601302030807-8cfadb191a24?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA4Mzl8MHwxfHNlYXJjaHwyfHxwaWxsc3xlbnwwfHx8YmxhY2t8MTc3NTgyNDIwNXww&ixlib=rb-4.1.0&q=85",
+    image_url: "https://images.unsplash.com/photo-1704018731195-f202bbeac8a7?w=800&h=800&fit=crop&crop=center&q=80",
     hero_ingredient: "Bacopa Monnieri",
     dosage_text: "2 capsules daily",
     directions_text:

@@ -104,3 +104,11 @@
 .glow-accent {
   box-shadow: 0 0 40px -10px hsl(42, 80%, 55%, 0.3);
 }
+
+
+/* Glass card */
+.glass-card {
+  background: hsla(210, 18%, 9%, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}

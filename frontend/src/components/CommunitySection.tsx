@@ -70,7 +70,7 @@ const CommunitySection = () => {
               Early access · Exclusive protocols · Privacy-first community
             </p>
             <Link
-              to="/community"
+              to="/collective/community"
               className="inline-flex items-center gap-2 text-xs font-medium text-primary hover:text-primary/80 tracking-[0.15em] uppercase mb-8"
             >
               Explore The Collective <ArrowRight size={12} />
