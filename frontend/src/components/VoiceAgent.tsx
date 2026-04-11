@@ -179,12 +179,11 @@ const VoiceAgent = () => {
             ) : isConnected ? (
               <WaveformBars isSpeaking={isSpeaking} />
             ) : (
-              /* Yin-yang: inverted + rotated mirror of the navbar logo */
-              <img
-                src={logoMark}
-                alt="OV"
-                className="w-7 h-7 rounded-md relative z-10 rotate-180 brightness-0 invert opacity-80"
-              />
+              /* Stacked OV mark — O above V, clean geometric logo */
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="relative z-10">
+                <ellipse cx="12" cy="8" rx="5.5" ry="5" stroke="white" strokeWidth="1.4" fill="none" opacity="0.85" />
+                <path d="M5.5 15L12 23L18.5 15" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.85" />
+              </svg>
             )}
           </div>
         </motion.button>

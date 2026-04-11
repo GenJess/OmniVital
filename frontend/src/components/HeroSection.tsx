@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import heroBg from "@/assets/hero-bg-new.jpg";
 
 const HeroSection = () => {
@@ -85,7 +86,7 @@ const HeroSection = () => {
         >
           <a
             href="#ritual"
-            className="inline-flex items-center gap-2 px-10 py-3.5 bg-primary text-primary-foreground font-semibold tracking-[0.2em] uppercase text-[11px] rounded-xl transition-all duration-300 hover:brightness-110 hover:scale-[1.025] active:scale-[0.98]"
+            className="inline-flex items-center gap-2 px-10 py-3.5 bg-primary text-primary-foreground font-semibold tracking-[0.2em] uppercase text-[11px] rounded-sm transition-all duration-300 hover:brightness-110 hover:scale-[1.025] active:scale-[0.98]"
             style={{
               boxShadow:
                 "0 0 0 1px hsla(168,76%,42%,0.3), 0 6px 28px -6px hsla(168,76%,42%,0.55), 0 2px 8px -2px hsla(0,0%,0%,0.4), inset 0 1px 0 hsla(255,100%,100%,0.1)",
@@ -93,9 +94,9 @@ const HeroSection = () => {
           >
             Explore The Ritual
           </a>
-          <a
-            href="#community"
-            className="inline-flex items-center gap-2 px-9 py-3.5 text-muted-foreground font-semibold tracking-[0.2em] uppercase text-[11px] rounded-xl transition-all duration-300 hover:text-foreground hover:scale-[1.025] active:scale-[0.98]"
+          <Link
+            to="/auth"
+            className="inline-flex items-center gap-2 px-9 py-3.5 text-muted-foreground font-semibold tracking-[0.2em] uppercase text-[11px] rounded-sm transition-all duration-300 hover:text-foreground hover:scale-[1.025] active:scale-[0.98]"
             style={{
               background: "hsla(0,0%,100%,0.05)",
               border: "1px solid hsla(0,0%,100%,0.1)",
@@ -103,7 +104,7 @@ const HeroSection = () => {
             }}
           >
             Join The Collective
-          </a>
+          </Link>
         </motion.div>
       </div>
 

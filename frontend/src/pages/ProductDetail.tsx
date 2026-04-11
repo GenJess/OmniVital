@@ -87,8 +87,9 @@ const ProductDetail = () => {
         {/* Back link */}
         <div className="container mx-auto px-6 py-4">
           <Link
-            to="/"
+            to="/#ritual"
             className="inline-flex items-center gap-2 text-xs tracking-[0.15em] uppercase text-muted-foreground hover:text-foreground transition-colors"
+            data-testid="pdp-back-link"
           >
             <ArrowLeft size={14} />
             Back to Rituals
