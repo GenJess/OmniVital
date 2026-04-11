@@ -66,9 +66,15 @@ const CommunitySection = () => {
             <p className="text-muted-foreground font-light mb-2 leading-relaxed">
               Get 20% off your first subscription.
             </p>
-            <p className="text-xs text-muted-foreground/60 tracking-[0.15em] uppercase mb-10">
-              Early access · Exclusive protocols
+            <p className="text-xs text-muted-foreground/60 tracking-[0.15em] uppercase mb-6">
+              Early access · Exclusive protocols · Privacy-first community
             </p>
+            <Link
+              to="/community"
+              className="inline-flex items-center gap-2 text-xs font-medium text-primary hover:text-primary/80 tracking-[0.15em] uppercase mb-8"
+            >
+              Explore The Collective <ArrowRight size={12} />
+            </Link>
 
             {submitted ? (
               <motion.div

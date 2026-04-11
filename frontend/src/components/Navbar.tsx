@@ -26,9 +26,10 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { label: "Shop", href: "#ritual" },
-    { label: "Science", href: "#science" },
-    { label: "Community", href: "#community" },
+    { label: "Products", href: "/#ritual", isRoute: false },
+    { label: "Science", href: "/#science", isRoute: false },
+    { label: "Community", href: "/community", isRoute: true },
+    { label: "Advisor", href: "/advisor", isRoute: true },
   ];
 
   return (
@@ -65,16 +66,27 @@ const Navbar = () => {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="relative px-5 py-2 text-xs font-medium tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300 group"
-              >
-                {link.label}
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-px bg-primary group-hover:w-3/4 transition-all duration-300" />
-              </a>
-            ))}
+            {navLinks.map((link) =>
+              link.isRoute ? (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  className="relative px-5 py-2 text-xs font-medium tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300 group"
+                >
+                  {link.label}
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-px bg-primary group-hover:w-3/4 transition-all duration-300" />
+                </Link>
+              ) : (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="relative px-5 py-2 text-xs font-medium tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground transition-colors duration-300 group"
+                >
+                  {link.label}
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-px bg-primary group-hover:w-3/4 transition-all duration-300" />
+                </a>
+              )
+            )}
 
           {user ? (
               <Link
@@ -153,19 +165,36 @@ const Navbar = () => {
             </button>
             <img src={logoMark} alt="OmniVital" className="w-16 h-16 rounded-xl mb-10" />
             <div className="flex flex-col items-center gap-8">
-              {navLinks.map((link, i) => (
-                <motion.a
-                  key={link.label}
-                  href={link.href}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.08 }}
-                  className="text-2xl font-light tracking-[0.3em] uppercase text-foreground hover:text-primary transition-colors duration-300"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {link.label}
-                </motion.a>
-              ))}
+              {navLinks.map((link, i) =>
+                link.isRoute ? (
+                  <motion.div
+                    key={link.label}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                  >
+                    <Link
+                      to={link.href}
+                      className="text-2xl font-light tracking-[0.3em] uppercase text-foreground hover:text-primary transition-colors duration-300"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.div>
+                ) : (
+                  <motion.a
+                    key={link.label}
+                    href={link.href}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                    className="text-2xl font-light tracking-[0.3em] uppercase text-foreground hover:text-primary transition-colors duration-300"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {link.label}
+                  </motion.a>
+                )
+              )}
               {user ? (
                 <>
                   <motion.div

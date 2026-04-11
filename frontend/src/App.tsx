@@ -9,10 +9,12 @@ import ProductDetail from "./pages/ProductDetail";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Advisor from "./pages/Advisor";
+import Community from "./pages/Community";
+import Checkout from "./pages/Checkout";
 
 const queryClient = new QueryClient();
 
-// This must render inside <AuthProvider> so useAuth() works
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth();
 
@@ -28,12 +30,13 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// Routes are defined inside AuthProvider so RequireAuth can call useAuth()
 function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/product/:slug" element={<ProductDetail />} />
+      <Route path="/community" element={<Community />} />
       <Route
         path="/dashboard"
         element={
@@ -42,7 +45,22 @@ function AppRoutes() {
           </RequireAuth>
         }
       />
-      <Route path="/product/:slug" element={<ProductDetail />} />
+      <Route
+        path="/advisor"
+        element={
+          <RequireAuth>
+            <Advisor />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/checkout"
+        element={
+          <RequireAuth>
+            <Checkout />
+          </RequireAuth>
+        }
+      />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
