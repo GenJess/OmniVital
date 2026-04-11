@@ -34,7 +34,7 @@
     --input: 0 0% 14%;
     --ring: 168 76% 42%;
 
-    --radius: 0.75rem;
+    --radius: 0.125rem;
 
     --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 0 0% 96%;
@@ -106,9 +106,10 @@
 }
 
 
-/* Glass card */
+/* Glass card — premium clinical depth */
 .glass-card {
   background: hsla(210, 18%, 9%, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid hsla(0, 0%, 100%, 0.1);
 }

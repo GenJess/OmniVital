@@ -33,7 +33,7 @@ const ProductCard = ({
     >
       <Link
         to={`/product/${product.slug}`}
-        className="group block relative overflow-hidden rounded-2xl h-full border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl hover:border-white/[0.12] transition-all duration-500 hover:shadow-2xl"
+        className="group block relative overflow-hidden rounded-sm h-full border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl hover:border-white/[0.12] transition-all duration-500 hover:shadow-2xl"
         style={{
           boxShadow: `0 0 80px -30px ${color}12, 0 0 0 1px ${color}08`,
         }}

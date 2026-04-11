@@ -19,6 +19,7 @@ const Navbar = () => {
 
   const navLinks = [
     { label: "Products", href: "/#ritual", isRoute: false },
+    { label: "Experience", href: "/#experience", isRoute: false },
     { label: "Science", href: "/#science", isRoute: false },
   ];
 

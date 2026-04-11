@@ -113,105 +113,80 @@ const VoiceAgent = () => {
 
   return (
     <>
-      {/* ── Floating orb ─────────────────────────────── */}
+      {/* ── Floating orb — yin-yang mirror of navbar logo ─── */}
       <div className="fixed bottom-20 right-6 z-50">
         <motion.button
           onClick={handleToggle}
-          className="relative w-[66px] h-[66px] rounded-full flex items-center justify-center focus:outline-none"
+          className="relative w-[60px] h-[60px] rounded-full flex items-center justify-center focus:outline-none"
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.92 }}
           aria-label="Open Ritual Advisor"
           data-testid="voice-agent-toggle"
         >
-          {/* Siri-style pulsing rings */}
+          {/* Pulsing rings */}
           <PulsingRings active={isConnected} />
 
           {/* Ambient glow */}
           <motion.div
-            className="absolute inset-[-14px] rounded-full pointer-events-none"
+            className="absolute inset-[-12px] rounded-full pointer-events-none"
             style={{
               background: isConnected
                 ? "radial-gradient(circle, hsla(168,76%,42%,0.35) 0%, hsla(42,80%,55%,0.08) 40%, transparent 65%)"
-                : "radial-gradient(circle, hsla(168,76%,42%,0.18) 0%, transparent 60%)",
+                : "radial-gradient(circle, hsla(168,76%,42%,0.15) 0%, transparent 60%)",
             }}
             animate={{
-              scale: isSpeaking ? [1, 1.3, 1] : [1, 1.12, 1],
-              opacity: isSpeaking ? [0.7, 1, 0.7] : [0.6, 0.85, 0.6],
+              scale: isSpeaking ? [1, 1.3, 1] : [1, 1.1, 1],
+              opacity: isSpeaking ? [0.7, 1, 0.7] : [0.5, 0.8, 0.5],
             }}
             transition={{
-              duration: isSpeaking ? 0.6 : 2.8,
+              duration: isSpeaking ? 0.6 : 3,
               repeat: Infinity,
               ease: "easeInOut",
             }}
           />
 
-          {/* Orb body — branded with logo */}
+          {/* Orb body */}
           <div
-            className="relative w-[60px] h-[60px] rounded-full flex items-center justify-center overflow-hidden"
+            className="relative w-[54px] h-[54px] rounded-full flex items-center justify-center overflow-hidden"
             style={{
               background: isConnected
                 ? "linear-gradient(145deg, hsl(168,76%,48%) 0%, hsl(168,76%,34%) 50%, hsl(42,70%,38%) 100%)"
-                : "linear-gradient(145deg, hsl(168,76%,26%) 0%, hsl(168,76%,18%) 60%, hsl(168,50%,12%) 100%)",
+                : "linear-gradient(145deg, hsl(0,0%,8%) 0%, hsl(0,0%,5%) 100%)",
               boxShadow: isConnected
                 ? [
                     "0 0 0 1.5px hsla(168,76%,60%,0.45)",
-                    "0 0 48px -4px hsla(168,76%,42%,0.8)",
-                    "0 0 22px -2px hsla(42,80%,55%,0.25)",
-                    "0 14px 36px -6px hsla(0,0%,0%,0.85)",
-                    "inset 0 2px 1px hsla(0,0%,100%,0.25)",
-                    "inset 0 -3px 8px hsla(0,0%,0%,0.4)",
+                    "0 0 40px -4px hsla(168,76%,42%,0.7)",
+                    "0 12px 32px -6px hsla(0,0%,0%,0.85)",
+                    "inset 0 1px 0 hsla(0,0%,100%,0.2)",
                   ].join(", ")
                 : [
-                    "0 0 0 1.5px hsla(168,76%,42%,0.2)",
-                    "0 0 28px -4px hsla(168,76%,42%,0.5)",
-                    "0 12px 32px -6px hsla(0,0%,0%,0.8)",
-                    "inset 0 1.5px 0 hsla(0,0%,100%,0.15)",
-                    "inset 0 -2px 6px hsla(0,0%,0%,0.35)",
+                    "0 0 0 1px hsla(168,76%,42%,0.25)",
+                    "0 0 24px -4px hsla(168,76%,42%,0.35)",
+                    "0 10px 28px -6px hsla(0,0%,0%,0.8)",
+                    "inset 0 1px 0 hsla(0,0%,100%,0.08)",
                   ].join(", "),
             }}
           >
-            {/* Top-left specular highlight */}
+            {/* Specular highlight */}
             <div
-              className="absolute top-[5px] left-[7px] w-[18px] h-[11px] rounded-full pointer-events-none"
+              className="absolute top-[4px] left-[6px] w-[16px] h-[10px] rounded-full pointer-events-none"
               style={{
-                background: "radial-gradient(ellipse at 40% 40%, hsla(0,0%,100%,0.3) 0%, transparent 100%)",
-              }}
-            />
-            {/* Inner subtle ring */}
-            <div
-              className="absolute inset-[3px] rounded-full pointer-events-none"
-              style={{
-                border: isConnected
-                  ? "1px solid hsla(168,76%,60%,0.15)"
-                  : "1px solid hsla(168,76%,42%,0.08)",
+                background: "radial-gradient(ellipse at 40% 40%, hsla(0,0%,100%,0.2) 0%, transparent 100%)",
               }}
             />
             {isOpen ? (
-              <X size={18} strokeWidth={2.5} className="text-white relative z-10" />
+              <X size={17} strokeWidth={2.5} className="text-white/80 relative z-10" />
             ) : isConnected ? (
               <WaveformBars isSpeaking={isSpeaking} />
             ) : (
-              <img src={logoMark} alt="OV" className="w-8 h-8 rounded-lg relative z-10 brightness-0 invert opacity-90" />
+              /* Yin-yang: inverted + rotated mirror of the navbar logo */
+              <img
+                src={logoMark}
+                alt="OV"
+                className="w-7 h-7 rounded-md relative z-10 rotate-180 brightness-0 invert opacity-80"
+              />
             )}
           </div>
-
-          {/* Brand label */}
-          {!isOpen && !isConnected && (
-            <motion.div
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="absolute -left-[72px] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg pointer-events-none"
-              style={{
-                background: "hsla(0,0%,6%,0.9)",
-                border: "1px solid hsla(0,0%,100%,0.08)",
-                backdropFilter: "blur(12px)",
-              }}
-            >
-              <span className="text-[8px] tracking-[0.2em] uppercase font-bold text-primary whitespace-nowrap">
-                OV Voice
-              </span>
-            </motion.div>
-          )}
         </motion.button>
       </div>
 
@@ -223,7 +198,7 @@ const VoiceAgent = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed bottom-[100px] right-6 z-50 w-[300px] rounded-2xl overflow-hidden"
+            className="fixed bottom-[100px] right-6 z-50 w-[300px] rounded-sm overflow-hidden"
             style={{
               background: "hsl(0,0%,6%)",
               border: "1px solid hsl(0,0%,16%)",
@@ -240,13 +215,13 @@ const VoiceAgent = () => {
             <div className="px-5 pt-4 pb-4" style={{ borderBottom: "1px solid hsl(0,0%,12%)" }}>
               <div className="flex items-center gap-3">
                 <div
-                  className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                  className="w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0"
                   style={{
                     background: "linear-gradient(145deg, hsl(168,76%,24%) 0%, hsl(168,76%,40%) 100%)",
                     boxShadow: "0 2px 12px -4px hsla(168,76%,42%,0.5)",
                   }}
                 >
-                  <OVMark size={18} />
+                  <img src={logoMark} alt="OV" className="w-5 h-5 brightness-0 invert" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-semibold text-foreground tracking-tight">Ritual Advisor</p>
@@ -258,14 +233,13 @@ const VoiceAgent = () => {
                       : "AI-powered wellness guidance"}
                   </p>
                 </div>
-                {isConnected && (
-                  <motion.div
-                    className="w-2 h-2 rounded-full ml-auto flex-shrink-0"
-                    style={{ background: "hsl(168,76%,42%)" }}
-                    animate={{ opacity: [1, 0.3, 1] }}
-                    transition={{ duration: 1.2, repeat: Infinity }}
-                  />
-                )}
+                <button
+                  onClick={handleToggle}
+                  className="w-7 h-7 rounded-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all flex-shrink-0"
+                  data-testid="voice-panel-close"
+                >
+                  <X size={14} />
+                </button>
               </div>
             </div>
 

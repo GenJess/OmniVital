@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import RitualGrid from "@/components/RitualGrid";
+import ExperienceSection from "@/components/ExperienceSection";
 import ScienceSection from "@/components/ScienceSection";
 import CommunitySection from "@/components/CommunitySection";
 import VoiceAgent from "@/components/VoiceAgent";
@@ -13,6 +14,7 @@ const Index = () => {
       <main>
         <HeroSection />
         <RitualGrid />
+        <ExperienceSection />
         <ScienceSection />
         <CommunitySection />
       </main>
