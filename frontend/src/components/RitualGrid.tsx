@@ -44,8 +44,8 @@ const ProductCard = ({
           style={{ background: color }}
         />
 
-        {/* Product image — 1:1 aspect ratio */}
-        <div className="relative aspect-square overflow-hidden">
+        {/* Product image — capped height on tablet, 1:1 on mobile/desktop */}
+        <div className="relative aspect-square sm:aspect-[4/3] md:aspect-square overflow-hidden">
           <img
             src={product.image_url}
             alt={product.name}
@@ -200,7 +200,7 @@ const RitualGrid = () => {
                 </motion.div>
 
                 {/* Product cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {slotProducts.map((product, i) => (
                     <ProductCard
                       key={product.slug}

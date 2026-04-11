@@ -3,6 +3,7 @@ import { useConversation } from "@elevenlabs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import logoMark from "@/assets/logo-mark.png";
 
 const AGENT_ID = "agent_5501kgzectw4ep69wjamch6xr2k7";
 
@@ -116,17 +117,18 @@ const VoiceAgent = () => {
       <div className="fixed bottom-20 right-6 z-50">
         <motion.button
           onClick={handleToggle}
-          className="relative w-[62px] h-[62px] rounded-full flex items-center justify-center focus:outline-none"
+          className="relative w-[66px] h-[66px] rounded-full flex items-center justify-center focus:outline-none"
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.92 }}
           aria-label="Open Ritual Advisor"
+          data-testid="voice-agent-toggle"
         >
           {/* Siri-style pulsing rings */}
           <PulsingRings active={isConnected} />
 
           {/* Ambient glow */}
           <motion.div
-            className="absolute inset-[-12px] rounded-full pointer-events-none"
+            className="absolute inset-[-14px] rounded-full pointer-events-none"
             style={{
               background: isConnected
                 ? "radial-gradient(circle, hsla(168,76%,42%,0.35) 0%, hsla(42,80%,55%,0.08) 40%, transparent 65%)"
@@ -143,34 +145,34 @@ const VoiceAgent = () => {
             }}
           />
 
-          {/* Orb body — multi-layer depth */}
+          {/* Orb body — branded with logo */}
           <div
-            className="relative w-[56px] h-[56px] rounded-full flex items-center justify-center"
+            className="relative w-[60px] h-[60px] rounded-full flex items-center justify-center overflow-hidden"
             style={{
               background: isConnected
-                ? "linear-gradient(145deg, hsl(168,76%,52%) 0%, hsl(168,76%,38%) 40%, hsl(42,70%,40%) 100%)"
-                : "linear-gradient(145deg, hsl(168,76%,28%) 0%, hsl(168,76%,20%) 55%, hsl(168,50%,14%) 100%)",
+                ? "linear-gradient(145deg, hsl(168,76%,48%) 0%, hsl(168,76%,34%) 50%, hsl(42,70%,38%) 100%)"
+                : "linear-gradient(145deg, hsl(168,76%,26%) 0%, hsl(168,76%,18%) 60%, hsl(168,50%,12%) 100%)",
               boxShadow: isConnected
                 ? [
-                    "0 0 0 1px hsla(168,76%,60%,0.4)",
-                    "0 0 44px -4px hsla(168,76%,42%,0.8)",
-                    "0 0 20px -2px hsla(42,80%,55%,0.25)",
+                    "0 0 0 1.5px hsla(168,76%,60%,0.45)",
+                    "0 0 48px -4px hsla(168,76%,42%,0.8)",
+                    "0 0 22px -2px hsla(42,80%,55%,0.25)",
                     "0 14px 36px -6px hsla(0,0%,0%,0.85)",
                     "inset 0 2px 1px hsla(0,0%,100%,0.25)",
                     "inset 0 -3px 8px hsla(0,0%,0%,0.4)",
                   ].join(", ")
                 : [
-                    "0 0 0 1px hsla(168,76%,42%,0.18)",
-                    "0 0 24px -4px hsla(168,76%,42%,0.45)",
+                    "0 0 0 1.5px hsla(168,76%,42%,0.2)",
+                    "0 0 28px -4px hsla(168,76%,42%,0.5)",
                     "0 12px 32px -6px hsla(0,0%,0%,0.8)",
                     "inset 0 1.5px 0 hsla(0,0%,100%,0.15)",
                     "inset 0 -2px 6px hsla(0,0%,0%,0.35)",
                   ].join(", "),
             }}
           >
-            {/* Top-left specular highlight — sphere/lens feel */}
+            {/* Top-left specular highlight */}
             <div
-              className="absolute top-[5px] left-[7px] w-[16px] h-[10px] rounded-full pointer-events-none"
+              className="absolute top-[5px] left-[7px] w-[18px] h-[11px] rounded-full pointer-events-none"
               style={{
                 background: "radial-gradient(ellipse at 40% 40%, hsla(0,0%,100%,0.3) 0%, transparent 100%)",
               }}
@@ -185,13 +187,31 @@ const VoiceAgent = () => {
               }}
             />
             {isOpen ? (
-              <X size={17} strokeWidth={2.5} className="text-white relative z-10" />
+              <X size={18} strokeWidth={2.5} className="text-white relative z-10" />
             ) : isConnected ? (
               <WaveformBars isSpeaking={isSpeaking} />
             ) : (
-              <OVMark size={26} />
+              <img src={logoMark} alt="OV" className="w-8 h-8 rounded-lg relative z-10 brightness-0 invert opacity-90" />
             )}
           </div>
+
+          {/* Brand label */}
+          {!isOpen && !isConnected && (
+            <motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="absolute -left-[72px] top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg pointer-events-none"
+              style={{
+                background: "hsla(0,0%,6%,0.9)",
+                border: "1px solid hsla(0,0%,100%,0.08)",
+                backdropFilter: "blur(12px)",
+              }}
+            >
+              <span className="text-[8px] tracking-[0.2em] uppercase font-bold text-primary whitespace-nowrap">
+                OV Voice
+              </span>
+            </motion.div>
+          )}
         </motion.button>
       </div>
 

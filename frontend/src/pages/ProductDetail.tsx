@@ -20,6 +20,7 @@ const ProductDetail = () => {
   const { user } = useAuth();
   const [addingToRitual, setAddingToRitual] = useState(false);
   const [alreadyInRitual, setAlreadyInRitual] = useState(false);
+  const [saveMode, setSaveMode] = useState(false);
 
   const product = slug ? getProductBySlug(slug) : undefined;
 
@@ -101,7 +102,7 @@ const ProductDetail = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="relative aspect-square rounded-2xl overflow-hidden bg-card border border-border"
+              className="relative aspect-square md:aspect-[4/3] lg:aspect-square rounded-2xl overflow-hidden bg-card border border-border"
             >
               <img
                 src={product.image_url}
@@ -155,10 +156,36 @@ const ProductDetail = () => {
                 <span className="text-foreground font-medium">{product.hero_ingredient}</span>
               </p>
 
-              <p className="text-3xl font-bold text-foreground mb-2">
-                ${product.price.toFixed(2)}
-                <span className="text-sm text-muted-foreground font-normal ml-1">/month</span>
+              <p className="text-3xl font-bold text-foreground mb-1">
+                ${(product.price / 30).toFixed(2)}
+                <span className="text-sm text-muted-foreground font-normal ml-1.5">/ daily ritual</span>
               </p>
+              <p className="text-xs text-muted-foreground mb-1">
+                {saveMode ? (
+                  <>
+                    <span className="line-through opacity-50">${product.price}/mo</span>
+                    <span className="text-accent font-semibold ml-1.5">${(product.price * 0.8).toFixed(0)}/mo with 20% off</span>
+                  </>
+                ) : (
+                  <>${product.price}/mo billed monthly</>
+                )}
+              </p>
+
+              {/* Subscribe & Save toggle */}
+              <button
+                onClick={() => setSaveMode(!saveMode)}
+                className={`inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all duration-300 mb-4 ${
+                  saveMode
+                    ? "bg-accent/10 text-accent border border-accent/30"
+                    : "bg-secondary/50 text-muted-foreground border border-border hover:border-primary/20"
+                }`}
+                data-testid="pdp-subscribe-save-toggle"
+              >
+                <span>Subscribe & Save 20%</span>
+                <div className={`relative w-8 h-4 rounded-full transition-all duration-300 ${saveMode ? "bg-accent" : "bg-secondary"}`}>
+                  <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-all duration-300 ${saveMode ? "left-[calc(100%-0.875rem)]" : "left-0.5"}`} />
+                </div>
+              </button>
 
               {/* Dosage */}
               <p className="text-xs text-muted-foreground mb-6">{product.dosage_text}</p>

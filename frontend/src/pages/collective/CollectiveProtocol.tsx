@@ -115,7 +115,7 @@ const CollectiveProtocol = () => {
                         <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ background: `radial-gradient(circle at 50% 0%, ${color}, transparent 70%)` }} />
 
                         {/* Image */}
-                        <div className="relative aspect-square overflow-hidden">
+                        <div className="relative aspect-square sm:aspect-[4/3] lg:aspect-square overflow-hidden">
                           <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
                           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
                           <div className="absolute top-3 right-3 text-[9px] tracking-[0.15em] uppercase text-muted-foreground px-2 py-0.5 rounded-full backdrop-blur-md bg-background/40 border border-border/50">{product.category}</div>
