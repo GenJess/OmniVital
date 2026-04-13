@@ -12,7 +12,7 @@ export type Database = {
   }
   public: {
     Tables: {
-      email_signups: {
+      ov_email_signups: {
         Row: {
           created_at: string
           email: string
@@ -30,7 +30,7 @@ export type Database = {
         }
         Relationships: []
       }
-      products: {
+      ov_products: {
         Row: {
           id: string
           name: string
@@ -102,11 +102,13 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles: {
+      ov_profiles: {
         Row: {
           id: string
           full_name: string | null
           ritual_summary: string | null
+          avatar_color: string | null
+          onboarding_completed: boolean
           created_at: string
           updated_at: string
         }
@@ -114,6 +116,8 @@ export type Database = {
           id: string
           full_name?: string | null
           ritual_summary?: string | null
+          avatar_color?: string | null
+          onboarding_completed?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -121,47 +125,14 @@ export type Database = {
           id?: string
           full_name?: string | null
           ritual_summary?: string | null
+          avatar_color?: string | null
+          onboarding_completed?: boolean
           created_at?: string
           updated_at?: string
         }
         Relationships: []
       }
-      ritual_logs: {
-        Row: {
-          id: string
-          user_id: string
-          product_id: string
-          feeling_score: number
-          notes: string | null
-          logged_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          product_id: string
-          feeling_score?: number
-          notes?: string | null
-          logged_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          product_id?: string
-          feeling_score?: number
-          notes?: string | null
-          logged_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ritual_logs_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_rituals: {
+      ov_user_rituals: {
         Row: {
           id: string
           user_id: string
@@ -189,15 +160,186 @@ export type Database = {
           display_order?: number
           added_at?: string
         }
+        Relationships: []
+      }
+      ov_ritual_logs: {
+        Row: {
+          id: string
+          user_id: string
+          product_id: string
+          feeling_score: number
+          notes: string | null
+          logged_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          product_id: string
+          feeling_score?: number
+          notes?: string | null
+          logged_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          product_id?: string
+          feeling_score?: number
+          notes?: string | null
+          logged_at?: string
+        }
+        Relationships: []
+      }
+      ov_community_threads: {
+        Row: {
+          id: string
+          author_id: string
+          title: string
+          body: string
+          color_tag: string
+          color_hex: string
+          product_tags: string[]
+          reply_count: number
+          like_count: number
+          pinned: boolean
+          is_team_post: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          author_id: string
+          title: string
+          body: string
+          color_tag?: string
+          color_hex?: string
+          product_tags?: string[]
+          reply_count?: number
+          like_count?: number
+          pinned?: boolean
+          is_team_post?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          author_id?: string
+          title?: string
+          body?: string
+          color_tag?: string
+          color_hex?: string
+          product_tags?: string[]
+          reply_count?: number
+          like_count?: number
+          pinned?: boolean
+          is_team_post?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ov_community_replies: {
+        Row: {
+          id: string
+          thread_id: string
+          author_id: string
+          body: string
+          like_count: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          thread_id: string
+          author_id: string
+          body: string
+          like_count?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          thread_id?: string
+          author_id?: string
+          body?: string
+          like_count?: number
+          created_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "user_rituals_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: "ov_community_replies_thread_id_fkey"
+            columns: ["thread_id"]
             isOneToOne: false
-            referencedRelation: "products"
+            referencedRelation: "ov_community_threads"
             referencedColumns: ["id"]
-          },
+          }
         ]
+      }
+      ov_community_likes: {
+        Row: {
+          id: string
+          user_id: string
+          thread_id: string | null
+          reply_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          thread_id?: string | null
+          reply_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          thread_id?: string | null
+          reply_id?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      ov_orders: {
+        Row: {
+          id: string
+          user_id: string
+          status: string
+          billing_interval: string
+          product_ids: string[]
+          subtotal: number
+          discount_pct: number
+          total: number
+          stripe_subscription_id: string | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          status?: string
+          billing_interval?: string
+          product_ids?: string[]
+          subtotal?: number
+          discount_pct?: number
+          total?: number
+          stripe_subscription_id?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          status?: string
+          billing_interval?: string
+          product_ids?: string[]
+          subtotal?: number
+          discount_pct?: number
+          total?: number
+          stripe_subscription_id?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -216,7 +358,6 @@ export type Database = {
 }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
-
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
@@ -327,7 +468,7 @@ export type CompositeTypes<
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][PublicCompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never

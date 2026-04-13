@@ -29,7 +29,7 @@ const ProductDetail = () => {
     if (!user || !product) return;
     const checkRitual = async () => {
       const { data } = await supabase
-        .from("user_rituals")
+        .from("ov_user_rituals")
         .select("id")
         .eq("user_id", user.id)
         .eq("product_id", product.id)
@@ -47,7 +47,7 @@ const ProductDetail = () => {
     if (!product) return;
     setAddingToRitual(true);
 
-    const { error } = await supabase.from("user_rituals").insert({
+    const { error } = await supabase.from("ov_user_rituals").insert({
       user_id: user.id,
       product_id: product.id,
       schedule_slot: product.schedule_slot,

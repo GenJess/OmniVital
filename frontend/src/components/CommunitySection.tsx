@@ -14,7 +14,7 @@ const CommunitySection = () => {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
-    const { error } = await supabase.from("email_signups").insert({ email });
+    const { error } = await supabase.from("ov_email_signups").insert({ email });
     setLoading(false);
     if (error) {
       toast.error("Something went wrong. Please try again.");
