@@ -1,0 +1,17 @@
+# Slim requirements for Vercel serverless deployment.
+# The full requirements.txt includes pandas/numpy/boto3 which exceed
+# Vercel's 250 MB serverless bundle limit — those are dev/test deps only.
+#
+# Vercel uses this file automatically if it is present in the service
+# entrypoint directory and named requirements.txt (rename via vercel.json
+# installCommand if needed, or just use this as reference to manually
+# set the installCommand to: pip install -r requirements.vercel.txt)
+
+fastapi==0.110.1
+uvicorn==0.25.0
+python-dotenv>=1.0.1
+pymongo==4.5.0
+motor==3.3.1
+pydantic>=2.6.4
+emergentintegrations
+python-multipart>=0.0.9
