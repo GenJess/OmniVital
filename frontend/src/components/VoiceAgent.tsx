@@ -1,8 +1,10 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useConversation } from "@elevenlabs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { getProductById } from "@/data/products";
 import logoMark from "@/assets/logo-mark.png";
 
 const AGENT_ID = "agent_5501kgzectw4ep69wjamch6xr2k7";
@@ -74,6 +76,51 @@ const VoiceAgent = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const { user, profile } = useAuth();
 
+  // Fetch user's ritual context for dynamic variables
+  const [ritualContext, setRitualContext] = useState<string>("");
+  const [streakDays, setStreakDays] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    const loadContext = async () => {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const weekAgo = new Date(today); weekAgo.setDate(weekAgo.getDate() - 6);
+
+      const [ritualsRes, logsRes] = await Promise.all([
+        supabase.from("ov_user_rituals").select("*").eq("user_id", user.id).eq("is_paused", false),
+        supabase.from("ov_ritual_logs").select("*").eq("user_id", user.id).gte("logged_at", weekAgo.toISOString()),
+      ]);
+
+      const activeRituals = ritualsRes.data || [];
+      const weekLogs = logsRes.data || [];
+
+      const formulaNames = activeRituals
+        .map(r => getProductById(r.product_id)?.name)
+        .filter(Boolean);
+
+      // Compute streak
+      const streakArr = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(); d.setDate(d.getDate() - (6 - i)); d.setHours(0, 0, 0, 0);
+        const nd = new Date(d); nd.setDate(nd.getDate() + 1);
+        return weekLogs.some(l => { const ld = new Date(l.logged_at); return ld >= d && ld < nd; });
+      });
+      const streakCount = [...streakArr].reverse().findIndex(d => !d);
+      const streak = streakCount === -1 ? 7 : streakCount;
+      setStreakDays(streak);
+
+      const parts: string[] = [];
+      if (profile?.full_name) parts.push(`User: ${profile.full_name}`);
+      if (formulaNames.length > 0) {
+        parts.push(`Active formulas: ${formulaNames.join(", ")}`);
+      } else {
+        parts.push("No active formulas yet");
+      }
+      if (streak > 0) parts.push(`Current streak: ${streak} days`);
+      setRitualContext(parts.join(". "));
+    };
+    loadContext();
+  }, [user, profile]);
+
   const conversation = useConversation({
     onConnect: () => console.log("Connected to OmniVital agent"),
     onDisconnect: () => console.log("Disconnected from agent"),
@@ -87,13 +134,19 @@ const VoiceAgent = () => {
       await conversation.startSession({
         agentId: AGENT_ID,
         connectionType: "webrtc",
+        // Pass user's ritual context as dynamic variables to ElevenLabs agent
+        dynamicVariables: {
+          user_name: profile?.full_name?.split(" ")[0] || "there",
+          ritual_context: ritualContext || "No active formulas",
+          streak_days: String(streakDays),
+        },
       });
     } catch (error) {
       console.error("Failed to start conversation:", error);
     } finally {
       setIsConnecting(false);
     }
-  }, [conversation]);
+  }, [conversation, profile, ritualContext, streakDays]);
 
   const stopConversation = useCallback(async () => {
     await conversation.endSession();
@@ -110,10 +163,11 @@ const VoiceAgent = () => {
 
   const isConnected = conversation.status === "connected";
   const isSpeaking = conversation.isSpeaking;
+  const firstName = profile?.full_name?.split(" ")[0] || "you";
 
   return (
     <>
-      {/* ── Floating orb — yin-yang mirror of navbar logo ─── */}
+      {/* ── Floating orb ─────────────────────────────────── */}
       <div className="fixed bottom-20 right-6 z-50">
         <motion.button
           onClick={handleToggle}
@@ -123,10 +177,8 @@ const VoiceAgent = () => {
           aria-label="Open Ritual Advisor"
           data-testid="voice-agent-toggle"
         >
-          {/* Pulsing rings */}
           <PulsingRings active={isConnected} />
 
-          {/* Ambient glow */}
           <motion.div
             className="absolute inset-[-12px] rounded-full pointer-events-none"
             style={{
@@ -145,7 +197,6 @@ const VoiceAgent = () => {
             }}
           />
 
-          {/* Orb body */}
           <div
             className="relative w-[54px] h-[54px] rounded-full flex items-center justify-center overflow-hidden"
             style={{
@@ -153,33 +204,17 @@ const VoiceAgent = () => {
                 ? "linear-gradient(145deg, hsl(168,76%,48%) 0%, hsl(168,76%,34%) 50%, hsl(42,70%,38%) 100%)"
                 : "linear-gradient(145deg, hsl(0,0%,8%) 0%, hsl(0,0%,5%) 100%)",
               boxShadow: isConnected
-                ? [
-                    "0 0 0 1.5px hsla(168,76%,60%,0.45)",
-                    "0 0 40px -4px hsla(168,76%,42%,0.7)",
-                    "0 12px 32px -6px hsla(0,0%,0%,0.85)",
-                    "inset 0 1px 0 hsla(0,0%,100%,0.2)",
-                  ].join(", ")
-                : [
-                    "0 0 0 1px hsla(168,76%,42%,0.25)",
-                    "0 0 24px -4px hsla(168,76%,42%,0.35)",
-                    "0 10px 28px -6px hsla(0,0%,0%,0.8)",
-                    "inset 0 1px 0 hsla(0,0%,100%,0.08)",
-                  ].join(", "),
+                ? ["0 0 0 1.5px hsla(168,76%,60%,0.45)", "0 0 40px -4px hsla(168,76%,42%,0.7)", "0 12px 32px -6px hsla(0,0%,0%,0.85)", "inset 0 1px 0 hsla(0,0%,100%,0.2)"].join(", ")
+                : ["0 0 0 1px hsla(168,76%,42%,0.25)", "0 0 24px -4px hsla(168,76%,42%,0.35)", "0 10px 28px -6px hsla(0,0%,0%,0.8)", "inset 0 1px 0 hsla(0,0%,100%,0.08)"].join(", "),
             }}
           >
-            {/* Specular highlight */}
-            <div
-              className="absolute top-[4px] left-[6px] w-[16px] h-[10px] rounded-full pointer-events-none"
-              style={{
-                background: "radial-gradient(ellipse at 40% 40%, hsla(0,0%,100%,0.2) 0%, transparent 100%)",
-              }}
-            />
+            <div className="absolute top-[4px] left-[6px] w-[16px] h-[10px] rounded-full pointer-events-none"
+              style={{ background: "radial-gradient(ellipse at 40% 40%, hsla(0,0%,100%,0.2) 0%, transparent 100%)" }} />
             {isOpen ? (
               <X size={17} strokeWidth={2.5} className="text-white/80 relative z-10" />
             ) : isConnected ? (
               <WaveformBars isSpeaking={isSpeaking} />
             ) : (
-              /* Stacked OV mark — O above V, clean geometric logo */
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="relative z-10">
                 <ellipse cx="12" cy="8" rx="5.5" ry="5" stroke="white" strokeWidth="1.4" fill="none" opacity="0.85" />
                 <path d="M5.5 15L12 23L18.5 15" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.85" />
@@ -189,7 +224,7 @@ const VoiceAgent = () => {
         </motion.button>
       </div>
 
-      {/* ── Agent panel ──────────────────────────────── */}
+      {/* ── Agent panel ──────────────────────────────────── */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -204,22 +239,17 @@ const VoiceAgent = () => {
               boxShadow: "0 24px 60px -12px hsla(0,0%,0%,0.9), 0 0 0 1px hsla(0,0%,100%,0.04)",
             }}
           >
-            {/* Top gradient bar */}
-            <div
-              className="h-[2px] w-full"
-              style={{ background: "linear-gradient(90deg, hsl(168,76%,42%) 0%, hsl(42,80%,55%) 100%)" }}
-            />
+            <div className="h-[2px] w-full"
+              style={{ background: "linear-gradient(90deg, hsl(168,76%,42%) 0%, hsl(42,80%,55%) 100%)" }} />
 
             {/* Header */}
             <div className="px-5 pt-4 pb-4" style={{ borderBottom: "1px solid hsl(0,0%,12%)" }}>
               <div className="flex items-center gap-3">
-                <div
-                  className="w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0"
+                <div className="w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0"
                   style={{
                     background: "linear-gradient(145deg, hsl(168,76%,24%) 0%, hsl(168,76%,40%) 100%)",
                     boxShadow: "0 2px 12px -4px hsla(168,76%,42%,0.5)",
-                  }}
-                >
+                  }}>
                   <img src={logoMark} alt="OV" className="w-5 h-5 brightness-0 invert" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -228,15 +258,13 @@ const VoiceAgent = () => {
                     {isConnected
                       ? isSpeaking ? "Speaking…" : "Listening…"
                       : user
-                      ? `Personalized for ${profile?.full_name?.split(" ")[0] || "you"}`
+                      ? `Personalized for ${firstName}`
                       : "AI-powered wellness guidance"}
                   </p>
                 </div>
-                <button
-                  onClick={handleToggle}
+                <button onClick={handleToggle}
                   className="w-7 h-7 rounded-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all flex-shrink-0"
-                  data-testid="voice-panel-close"
-                >
+                  data-testid="voice-panel-close">
                   <X size={14} />
                 </button>
               </div>
@@ -253,13 +281,11 @@ const VoiceAgent = () => {
                       animate={{ scale: isSpeaking ? [1, 1.4, 1] : [1, 1.12, 1] }}
                       transition={{ duration: isSpeaking ? 0.5 : 2.2, repeat: Infinity }}
                     />
-                    <div
-                      className="w-16 h-16 rounded-full flex items-center justify-center"
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center"
                       style={{
                         background: "linear-gradient(140deg, hsl(168,76%,40%) 0%, hsl(42,80%,52%) 100%)",
                         boxShadow: "0 0 28px -6px hsla(168,76%,42%,0.6)",
-                      }}
-                    >
+                      }}>
                       <OVMark size={28} />
                     </div>
                   </div>
@@ -268,15 +294,9 @@ const VoiceAgent = () => {
                     {isSpeaking ? "Your advisor is responding…" : "Speak naturally — I'm listening"}
                   </p>
 
-                  <button
-                    onClick={stopConversation}
+                  <button onClick={stopConversation}
                     className="w-full py-2.5 text-[11px] font-semibold tracking-[0.2em] uppercase rounded-xl transition-all duration-200 hover:brightness-110"
-                    style={{
-                      background: "hsl(0,0%,10%)",
-                      color: "hsl(0,0%,70%)",
-                      border: "1px solid hsl(0,0%,18%)",
-                    }}
-                  >
+                    style={{ background: "hsl(0,0%,10%)", color: "hsl(0,0%,70%)", border: "1px solid hsl(0,0%,18%)" }}>
                     End Session
                   </button>
                 </>
@@ -289,39 +309,34 @@ const VoiceAgent = () => {
                       animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
                       transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                     />
-                    <div
-                      className="w-16 h-16 rounded-full flex items-center justify-center"
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center"
                       style={{
                         background: "linear-gradient(145deg, hsl(168,76%,18%) 0%, hsl(168,76%,32%) 100%)",
                         border: "1px solid hsla(168,76%,42%,0.2)",
                         boxShadow: "0 4px 20px -8px hsla(168,76%,42%,0.4)",
-                      }}
-                    >
+                      }}>
                       <OVMark size={28} />
                     </div>
                   </div>
 
                   <div className="text-center space-y-1.5">
                     <p className="text-[13px] font-semibold text-foreground tracking-tight">
-                      {user ? "Talk to your advisor" : "Meet your Ritual Advisor"}
+                      {user ? `Talk to your advisor, ${firstName}` : "Meet your Ritual Advisor"}
                     </p>
                     <p className="text-[11px] text-muted-foreground leading-relaxed max-w-[220px] mx-auto">
-                      {user && profile?.ritual_summary
-                        ? profile.ritual_summary
+                      {ritualContext
+                        ? ritualContext
                         : "Ask about protocols, products, or build your personalized ritual."}
                     </p>
                   </div>
 
-                  <button
-                    onClick={startConversation}
-                    disabled={isConnecting}
+                  <button onClick={startConversation} disabled={isConnecting}
                     className="w-full py-3 text-[11px] font-semibold tracking-[0.22em] uppercase rounded-xl transition-all duration-300 hover:brightness-110 hover:scale-[1.02] active:scale-[0.99] disabled:opacity-50"
                     style={{
                       background: "linear-gradient(135deg, hsl(168,76%,40%) 0%, hsl(168,76%,34%) 100%)",
                       color: "hsl(0,0%,98%)",
                       boxShadow: "0 4px 24px -6px hsla(168,76%,42%,0.55), 0 0 0 1px hsla(168,76%,42%,0.2), inset 0 1px 0 hsla(0,0%,100%,0.1)",
-                    }}
-                  >
+                    }}>
                     {isConnecting ? "Connecting…" : "Start Conversation"}
                   </button>
                 </>

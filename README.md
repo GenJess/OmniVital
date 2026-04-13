@@ -4,8 +4,6 @@
 
 OmniVital is a next-generation health and wellness platform that goes beyond selling supplements. We build **end-to-end wellness relationships** — from helping users find the right products, to tracking adherence with an AI-powered ritual advisor, to connecting them with a privacy-first community of like-minded individuals.
 
-No more guru-optimized first conversions that leave customers on their own. OmniVital helps them at every step.
-
 ---
 
 ## Vision
@@ -14,11 +12,9 @@ The wellness supplement industry is broken in a familiar way: brands optimize fo
 
 **OmniVital inverts this model.**
 
-We believe the product is just the entry point. The real value is in:
-
-1. **The Ritual** — A structured, time-of-day protocol that turns supplementation from a random habit into an intentional practice
-2. **The Advisor** — An AI expert that knows your stack, your goals, and the latest research — always available, never selling
-3. **The Collective** — A privacy-preserving community where people connect through shared wellness goals, not personal data
+1. **The Ritual** — A structured, time-of-day protocol that turns supplementation into an intentional practice
+2. **The Advisor** — An AI expert that knows your stack, your goals, and the latest research — always available
+3. **The Collective** — A privacy-preserving community where people connect through shared wellness goals
 
 ---
 
@@ -57,201 +53,298 @@ All products feature clinically studied, patented ingredients at research-valida
 | **Frontend** | React 18 + TypeScript + Vite | SPA with hot reload |
 | **Styling** | Tailwind CSS + shadcn/ui | Utility-first design system |
 | **Animations** | Framer Motion | Premium micro-interactions |
-| **Auth & User Data** | Supabase | Authentication, user rituals, ritual logs, email signups |
-| **Product Catalog** | Static TypeScript module | Instant load, no API dependency for catalog |
+| **Auth & User Data** | Supabase (GenJessLabs) | Auth, rituals, logs, community, orders |
+| **Product Catalog** | Static TypeScript module | Instant load, no API dependency |
 | **AI Advisor** | FastAPI + OpenAI (GPT-4.1) | Context-aware wellness chat |
 | **Chat Persistence** | MongoDB | Multi-session conversation history |
 | **Voice Agent** | ElevenLabs | Voice-based ritual advisor (floating orb) |
 
-### Why This Architecture?
+---
 
-**Static product catalog** (`src/data/products.ts`): Products change infrequently. Serving them from a static module means zero API calls for the catalog, instant page loads, and no dependency on database availability for the storefront. Product IDs match Supabase exactly, so user-specific data (rituals, logs) still uses the database seamlessly.
+## Database Schema
 
-**Supabase for user data**: Row-level security policies ensure users can only access their own rituals and logs. Auto-profile creation on signup via database triggers. Email signups for waitlist are insert-only (no read access via anon key).
+**Supabase project**: GenJessLabs (`fcepdlsszyswvfeewkap`)  
+**Shared DB**: All OmniVital tables are prefixed `ov_` to coexist with other projects.
 
-**FastAPI + MongoDB for AI advisor**: The advisor needs conversation persistence and LLM integration. MongoDB stores chat history by session ID. The system prompt is deeply tailored to OmniVital's product line and ritual philosophy.
+### Design Decisions
 
-**Separation of concerns**: The frontend talks to Supabase directly for auth and user data. It talks to the FastAPI backend only for AI advisor functionality. This keeps the architecture clean and each service focused.
+1. **`ov_` prefix on all tables** — GenJessLabs is a multipurpose/testing DB. Prefixing avoids name conflicts with other projects on the same instance.
+
+2. **`product_id` is TEXT (not UUID FK)** — Products live in the static frontend catalog (`src/data/products.ts`). Using a text ID avoids maintaining a DB sync step for product data while the catalog is small and changes infrequently. When we need reporting or admin, we can add a proper FK later.
+
+3. **Denormalized counters on threads** — `reply_count` and `like_count` on `ov_community_threads` are maintained by DB triggers (`ov_on_reply_created`, `ov_on_like_insert`). This avoids expensive COUNT queries in the community feed.
+
+4. **REPLICA IDENTITY FULL on community tables** — Enables Supabase Realtime to broadcast row-level changes (new replies appear in real-time without polling).
+
+5. **RLS on all tables** — Users can only read/write their own rows. Community content (threads, replies) is readable by any authenticated user, but writable only by the author.
+
+6. **Profile auto-creation trigger** — `ov_handle_new_user()` fires on `auth.users` INSERT to create a profile row automatically, so the app never has to check if a profile exists.
+
+### Tables
+
+#### `ov_profiles`
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | UUID PK | References `auth.users(id)` |
+| `full_name` | TEXT | User's display name |
+| `ritual_summary` | TEXT | AI-generated ritual description (shown in voice advisor) |
+| `avatar_color` | TEXT | Hex color for community badge (defaults to `#0D9488`) |
+| `onboarding_completed` | BOOLEAN | Tracks onboarding flow |
+| `created_at` | TIMESTAMPTZ | |
+| `updated_at` | TIMESTAMPTZ | Auto-updated by trigger |
+
+#### `ov_user_rituals`
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | UUID PK | |
+| `user_id` | UUID | References `auth.users(id)` |
+| `product_id` | TEXT | Product ID from static catalog |
+| `schedule_slot` | TEXT | `morning` / `midday` / `evening` |
+| `is_paused` | BOOLEAN | Paused rituals excluded from check-ins |
+| `display_order` | INTEGER | Within-slot ordering |
+| `added_at` | TIMESTAMPTZ | When the user added this formula |
+
+Unique constraint: `(user_id, product_id)` — one entry per user per product.
+
+#### `ov_ritual_logs`
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | UUID PK | |
+| `user_id` | UUID | |
+| `product_id` | TEXT | |
+| `feeling_score` | INTEGER | 1–5 scale, checked daily |
+| `notes` | TEXT | Optional text note |
+| `logged_at` | TIMESTAMPTZ | Defaults to now() |
+
+Used for: streak calculation, calendar heatmap, advisor context, avg score display.
+
+#### `ov_community_threads`
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | UUID PK | |
+| `author_id` | UUID | References `auth.users(id)` |
+| `title` | TEXT | Thread headline |
+| `body` | TEXT | Full post body |
+| `color_tag` | TEXT | e.g. "Teal Focus" — public identity, not name |
+| `color_hex` | TEXT | Hex color of the tag |
+| `product_tags` | TEXT[] | Optional product mentions |
+| `reply_count` | INTEGER | Denormalized, maintained by trigger |
+| `like_count` | INTEGER | Denormalized, maintained by trigger |
+| `pinned` | BOOLEAN | Admin-pinned posts |
+| `is_team_post` | BOOLEAN | OmniVital team posts |
+
+#### `ov_community_replies`
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | UUID PK | |
+| `thread_id` | UUID | FK → `ov_community_threads` |
+| `author_id` | UUID | |
+| `body` | TEXT | |
+| `like_count` | INTEGER | |
+| `created_at` | TIMESTAMPTZ | |
+
+Realtime enabled — new replies broadcast instantly to all viewers of a thread.
+
+#### `ov_community_likes`
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | UUID PK | |
+| `user_id` | UUID | |
+| `thread_id` | UUID (nullable) | Like on a thread |
+| `reply_id` | UUID (nullable) | Like on a reply |
+
+Unique constraints prevent duplicate likes per user per thread/reply.
+
+#### `ov_orders`
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | UUID PK | |
+| `user_id` | UUID | |
+| `status` | TEXT | `active` / `paused` / `cancelled` |
+| `billing_interval` | TEXT | `monthly` / `quarterly` |
+| `product_ids` | TEXT[] | Snapshot of subscribed products |
+| `subtotal` | NUMERIC | Before discount |
+| `discount_pct` | NUMERIC | 0 or 20 |
+| `total` | NUMERIC | Final charged amount |
+| `stripe_subscription_id` | TEXT | Populated when Stripe connected |
+| `notes` | TEXT | |
+
+#### `ov_email_signups`
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | UUID PK | |
+| `email` | TEXT UNIQUE | |
+| `created_at` | TIMESTAMPTZ | |
+
+Insert-only (no RLS read policy for anon).
+
+#### `ov_products`
+Reference catalog in Supabase. Currently unused by the frontend (static catalog is source of truth) but available for admin tooling and future server-side personalization.
 
 ---
 
-## Pages & Features
+## Migration Files
 
-### `/` — Landing Page
-- **Hero**: Full-screen with product imagery, "Your Ritual, Precision Built" headline
-- **Ritual Grid**: All 6 products grouped by morning/midday/evening with product cards
-- **Science Section**: Research credibility and methodology
-- **Community CTA**: Email signup + link to The Collective
-- **Voice Agent**: Floating ElevenLabs orb (bottom right)
-
-### `/product/:slug` — Product Detail Pages
-- Product image with color-themed gradient overlay
-- Category + schedule slot badges
-- Hero ingredient callout
-- Full description + 4 benefit bullets
-- "Add to Ritual" CTA (writes to Supabase `user_rituals`)
-- Bio-Availability / Sourcing / Daily Ritual tabs
-- Directions panel
-- Trust badges (Clinically Dosed, 3rd-Party Tested, Clean Sourced)
-
-### `/auth` — Authentication
-- Supabase Auth (email/password)
-- Sign in / Sign up toggle
-- OmniVital branded experience
-- Redirects to dashboard on success
-
-### `/dashboard` — Ritual Dashboard (Protected)
-- Greeting with user's name + ritual completion stats
-- 7-day streak tracker with visual bar chart
-- Ritual stack grouped by morning/midday/evening
-- Daily check-in with 1-5 feeling score
-- Add/remove/pause products in ritual
-- Collective tips (protocol advice, science insights)
-- Community chat preview
-- AI advisor CTA
-
-### `/advisor` — AI Ritual Advisor (Protected)
-- Full-screen chat interface with OV advisor
-- Context-aware: knows the user's current ritual stack
-- Suggested questions for new users
-- Chat history persistence across sessions
-- Clear history option
-- Powered by GPT-4.1 via Emergent Integrations
-
-### `/community` — The Collective
-- "Your People. Your Privacy." hero
-- Privacy-preserving color-tag system (6 wellness colors)
-- "How The Collective Works" explainer
-- Sample discussion threads with color badges
-- Join CTA for unauthenticated users
-- Coming-soon notice for full community features
-
-### `/checkout` — Subscription Checkout (Protected)
-- Cart populated from user's active ritual stack
-- Monthly/quarterly billing toggle (10% quarterly discount)
-- Order summary with subtotal, discount, shipping (free)
-- "Subscribe Now" button (Stripe-ready placeholder)
-- Trust badges (SSL, cancel anytime, free shipping)
+```
+frontend/supabase/migrations/
+├── 20260215203300_*.sql          # Legacy: products, email_signups (not applied to GenJessLabs)
+├── 20260217205140_*.sql          # Legacy: profiles, rituals, logs triggers (not applied)
+├── 20260413000001_omnivital_core_schema.sql       # Applied ✓ GenJessLabs
+└── 20260413000002_omnivital_community_and_orders.sql  # Applied ✓ GenJessLabs
+```
 
 ---
 
-## Database Schema (Supabase)
+## Routes & Pages
 
-### `products`
-Full catalog with `schedule_slot`, `hero_ingredient`, `benefit_bullets` (JSONB), `color_tag` (JSONB), `display_order`, `active` flag. RLS: public read for all.
+### Public Routes
+| Route | Page | Description |
+|-------|------|-------------|
+| `/` | Landing | Hero, product grid, science section, email signup |
+| `/product/:slug` | ProductDetail | Full product page with "Add to Ritual" |
+| `/auth` | Auth | Sign in / sign up |
 
-### `profiles`
-Linked to `auth.users` via FK. Auto-created on signup via trigger. Stores `full_name` and `ritual_summary`.
-
-### `user_rituals`
-Links users to products with `schedule_slot`, `is_paused`, `display_order`. Unique constraint on `(user_id, product_id)`. RLS: users manage their own only.
-
-### `ritual_logs`
-Daily check-ins with `feeling_score` (1-5) and optional `notes`. Indexed on `user_id` and `logged_at`. RLS: users manage their own only.
-
-### `email_signups`
-Waitlist/newsletter signups. Insert-only RLS (no read for anon).
-
----
-
-## AI Advisor System
-
-The OV Advisor is powered by OpenAI GPT-4.1 through Emergent Integrations. Key design decisions:
-
-- **System prompt**: 2000+ word prompt covering the full product line, dosing protocols, stacking strategies, timing guidelines, and behavioral guardrails
-- **Context injection**: User's active ritual stack is injected per-message so the advisor can reference specific products
-- **Conversation memory**: Last 10 messages are replayed as context for continuity
-- **Guardrails**: No medical claims, no pressure to buy, always recommend consulting healthcare professionals
-- **Personality**: Calm, evidence-based, premium tone — mirrors the OmniVital brand
+### Protected Routes (Requires Auth)
+| Route | Page | Description |
+|-------|------|-------------|
+| `/collective` | CollectiveDashboard | Ritual tracker, streak, calendar, AI advisor chat |
+| `/collective/protocol` | CollectiveProtocol | Build/manage formula stack, subscribe |
+| `/collective/community` | CollectiveCommunity | Live community threads, replies, likes |
 
 ---
 
-## Design System
+## Signed-In Experience
 
-### Color Palette
-- **Background**: Near-black (`hsl(210, 20%, 6%)`)
-- **Card**: Elevated dark (`hsl(210, 18%, 9%)`)
-- **Primary**: OmniVital Teal (`hsl(168, 76%, 42%)`)
-- **Accent**: Gold (`hsl(42, 80%, 55%)`)
-- **Product Colors**: Each product has a unique `color_tag` (teal, amber, pink, indigo, violet, red)
+### Dashboard (`/collective`)
+- **Greeting** with first name, time-of-day awareness
+- **Stats**: streak, today's completion %, active formula count
+- **7-day streak bar** — visual blocks for each day
+- **Today tab**: Ritual stack grouped by morning/midday/evening with check-in (1–5 score)
+- **History tab**: Monthly calendar heatmap showing check-in history, color-coded by feeling score
+- **AI Advisor chat**: Real-time chat powered by backend (GPT-4.1), personalized with:
+  - Active formula stack
+  - Today's avg feeling score
+  - Current streak days
+  - User's name
+- **Voice Agent** (floating orb): ElevenLabs voice advisor, injected with user's ritual context via dynamic variables
 
-### Typography
-- Tracking: Heavy letter-spacing on labels (0.2em–0.5em)
-- Weights: Bold headings, light body text
-- Size hierarchy: XS labels → SM body → LG section headers → 5XL hero
+### Protocol (`/collective/protocol`)
+- Browse all 6 formulas by time slot
+- Add/remove/pause formulas in your stack (persisted to `ov_user_rituals`)
+- Subscribe & Save toggle (20% off quarterly)
+- Live order summary with running total
+- **Subscribe Now**: Creates or updates an `ov_orders` record (Stripe integration additive)
+- Shows active subscription status if already subscribed
 
-### Components
-- Glass cards with subtle borders
-- Color-coded product badges
-- Animated product cards with hover effects
-- Teal/gold gradient CTAs
-- OVO·G membership badges
+### Community (`/collective/community`)
+- **Live threads** fetched from `ov_community_threads` (Supabase)
+- **Realtime replies** — new replies broadcast instantly via Supabase Realtime
+- **Post a thread**: color tag picker, title, body — writes to `ov_community_threads`
+- **Thread detail**: slide-in panel with all replies, reply input, like button
+- **Likes**: optimistic UI, deduplicated in DB
+- **Privacy**: identity shown as color badge only (not name/email)
+- User's badge color derived from `ov_profiles.avatar_color`
 
 ---
 
-## Stripe Integration (Ready to Connect)
+## AI Personalization
 
-The checkout page is fully scaffolded and ready for Stripe:
+### Text Chat (Backend)
+The `/api/advisor/chat` endpoint receives a `ritual_context` string built from:
+- Active formula names + schedule slots + prices
+- Today's avg feeling score
+- Current streak days
+- User's full name
 
-1. **Cart state**: Populated from `user_rituals` table
-2. **Billing intervals**: Monthly and quarterly (with 10% discount)
-3. **Order summary**: Calculated dynamically
-4. **Subscribe button**: Calls `handleCheckout()` — connect Stripe Checkout here
-5. **Product pages**: "Add to Ritual" → adds to DB → shows in checkout
+This is appended to the system prompt so GPT-4.1 responds as a personalized advisor.
 
-### To connect Stripe:
-1. Create Stripe products matching the 6 OmniVital products
-2. Create monthly and quarterly price objects for each
-3. Install `@stripe/stripe-js` and configure with your publishable key
-4. Replace `handleCheckout()` with Stripe Checkout session creation
-5. Add webhook handler for subscription lifecycle events
+### Voice Agent (ElevenLabs)
+`VoiceAgent.tsx` fetches the user's ritual context on mount, then passes it to ElevenLabs as `dynamicVariables`:
+```ts
+dynamicVariables: {
+  user_name: profile.full_name.split(" ")[0],
+  ritual_context: "Active formulas: OV Drive, OV Adapt...",
+  streak_days: "7",
+}
+```
+These variables are injected into the ElevenLabs agent's system prompt at session start.
 
 ---
 
 ## Environment Variables
 
 ### Frontend (`frontend/.env`)
-```
-REACT_APP_BACKEND_URL=<backend URL>
-VITE_SUPABASE_URL=<supabase project URL>
-VITE_SUPABASE_ANON_KEY=<supabase anon key>
+```bash
+VITE_SUPABASE_URL=https://fcepdlsszyswvfeewkap.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+VITE_APP_ENV=development
 ```
 
 ### Backend (`backend/.env`)
-```
-MONGO_URL=<mongodb connection string>
+```bash
+MONGO_URL=mongodb://...
 DB_NAME=omnivital
-CORS_ORIGINS=*
-EMERGENT_LLM_KEY=<emergent universal key>
+EMERGENT_LLM_KEY=...
+CORS_ORIGINS=http://localhost:5173,https://your-domain.com
 ```
 
 ---
 
-## Running Locally
+## Local Development
 
 ```bash
 # Frontend
 cd frontend
-yarn install
-yarn dev
+npm install
+npm run dev          # http://localhost:5173
 
 # Backend
 cd backend
 pip install -r requirements.txt
-uvicorn server:app --host 0.0.0.0 --port 8001 --reload
+uvicorn server:app --reload --port 8001
 ```
 
 ---
 
-## What's Left
+## Roadmap
 
-- [ ] **Stripe integration**: Connect products to Stripe prices, implement checkout flow
-- [ ] **Full community**: Threaded discussions, real-time messaging, color-matched groups
-- [ ] **Ritual calendar**: Visual calendar view of adherence history
-- [ ] **Push notifications**: Ritual reminders at scheduled times
-- [ ] **RAG on research**: Upload authoritative wellness research for advisor context
-- [ ] **Admin panel**: Product management, community moderation, analytics
+### Next
+- [ ] **Stripe integration** — Connect Subscribe Now to Stripe Checkout
+- [ ] **Community moderation** — Admin can pin/delete threads
+- [ ] **Profile onboarding** — Set name, goals, color tag during first login
+- [ ] **Ritual reminders** — Push/email notifications at scheduled times
+
+### Later
+- [ ] Admin dashboard (product management, user analytics)
+- [ ] Ritual AI summary (auto-update `ritual_summary` based on logs + check-ins)
+- [ ] Mobile app (React Native)
+- [ ] Community DMs
+- [ ] Research docs RAG for advisor
 
 ---
 
-*Built with intention. Engineered for performance. Designed for the humans who use it.*
+## Key Files
+
+```
+frontend/
+├── src/
+│   ├── pages/collective/
+│   │   ├── CollectiveDashboard.tsx    # Main dashboard + AI chat + calendar
+│   │   ├── CollectiveProtocol.tsx     # Formula builder + subscription
+│   │   └── CollectiveCommunity.tsx    # Live community threads
+│   ├── components/
+│   │   ├── RitualCalendar.tsx         # Monthly calendar heatmap
+│   │   ├── VoiceAgent.tsx             # ElevenLabs floating orb + context
+│   │   └── ...
+│   ├── contexts/AuthContext.tsx        # Supabase auth + profile
+│   ├── integrations/supabase/
+│   │   ├── client.ts                  # Supabase client
+│   │   └── types.ts                   # TypeScript types (all ov_ tables)
+│   └── data/products.ts               # Static product catalog (source of truth)
+├── supabase/migrations/               # SQL migration files
+└── .env                               # Supabase credentials (not committed)
+
+backend/
+├── server.py                          # FastAPI + GPT-4.1 advisor
+└── requirements.txt
+```

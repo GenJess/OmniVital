@@ -6,7 +6,10 @@ interface Profile {
   id: string;
   full_name: string | null;
   ritual_summary: string | null;
+  avatar_color: string | null;
+  onboarding_completed: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 interface AuthContextType {
@@ -41,7 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
-      .from("profiles")
+      .from("ov_profiles")
       .select("*")
       .eq("id", userId)
       .single();
