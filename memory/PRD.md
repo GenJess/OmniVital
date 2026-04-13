@@ -24,7 +24,9 @@ OmniVital is a white-label health and wellness platform offering six precision s
 - **Glassmorphism**: `backdrop-filter: blur(12px)` + `border: 1px solid rgba(255,255,255,0.1)` on all cards
 - **Colors**: Teal primary (168,76%,42%), Gold accent (42,80%,55%), near-black background (0,0%,4%)
 - **Typography**: Inter font family, sharp tracking on uppercase labels
-- **Voice Agent**: Yin-yang mirrored logo button (dark orb, bottom-right), panel with close button
+- **Voice Agent**: SVG OV mark (O ellipse + V chevron) in dark orb, bottom-right, panel with close button
+- **Hero**: Semi-transparent overlay (55% opacity) over atmospheric mountain landscape
+- **No white flash**: `html,body{background-color:hsl(0,0%,4%)}` inline in index.html
 
 ## Product Catalog
 1. OV Drive ($64) - Morning - Energy - Cordyceps Militaris
@@ -36,20 +38,24 @@ OmniVital is a white-label health and wellness platform offering six precision s
 
 ## Completed Work
 - [x] Full landing page (Hero, RitualGrid, ExperienceSection, ScienceSection, CommunitySection)
-- [x] New atmospheric hero background (dark moody mountains, no text conflicts)
-- [x] "Experience" nav item + section explaining how platform works (4 steps)
-- [x] UI Sharpness pass (2px corners, glassmorphism depth on all cards)
-- [x] Voice Agent: yin-yang mirrored logo button, close button on panel, no text label
+- [x] Atmospheric hero bg (dark mountains, semi-transparent overlay showing vibe)
+- [x] "Experience" nav item + section (4 steps: Meet OV, Build Ritual, Track, Community)
+- [x] UI Sharpness pass (2px corners everywhere, glassmorphism on all cards)
+- [x] Voice Agent: SVG OV mark button (no white square), close button on panel
+- [x] "Join The Collective" hero CTA → /auth (not bottom of page)
+- [x] "Back to Rituals" on PDP → /#ritual (scrolls to product grid)
+- [x] ScrollToHash component for client-side hash navigation
+- [x] White flash prevention (inline body bg in index.html)
 - [x] Product Detail Page with daily ritual pricing + Subscribe & Save toggle
 - [x] AI Advisor chat endpoint (POST /api/advisor/chat)
 - [x] Voice Agent (ElevenLabs)
-- [x] Portal model: /collective routes with sidebar layout (Dashboard, Community, Protocol)
-- [x] Navbar with 3 nav items (Products, Experience, Science) + Sign In/Join CTA
+- [x] Portal model: /collective routes with sidebar layout
+- [x] Navbar with 3 nav items + Sign In/Join CTA (sharp corners)
 - [x] Glassmorphism product cards with $X.XX/daily ritual pricing
 - [x] Subscribe & Save 20% toggle on landing page and PDP
-- [x] Auth race condition fix (no loading flicker on route transitions)
+- [x] Auth race condition fix (no loading flicker)
 - [x] Favicon set to OmniVital logo
-- [x] Responsive tablet image sizing (4:3 aspect ratio on tablet)
+- [x] Responsive tablet image sizing (4:3 on tablet)
 
 ## Remaining Work
 - [ ] Three.js fluid sphere OV Voice orb with GSAP breathing animation (Phase 3)
@@ -58,6 +64,7 @@ OmniVital is a white-label health and wellness platform offering six precision s
 - [ ] Connect Stripe to checkout (CollectiveProtocol has placeholder)
 - [ ] Full community (threaded discussions, real-time messaging)
 - [ ] Apple Watch / health integration for tracking
+- [ ] "Stack Builder" quiz for conversion
 - [ ] Ritual calendar view
 - [ ] Push notifications for ritual reminders
 - [ ] RAG on authoritative wellness research for advisor

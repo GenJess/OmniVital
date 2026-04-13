@@ -145,7 +145,7 @@ const Navbar = () => {
                 {session ? (
                   <Link
                     to="/collective"
-                    className="flex items-center gap-2 px-8 py-3 rounded-lg text-sm font-semibold tracking-[0.15em] uppercase"
+                    className="flex items-center gap-2 px-8 py-3 rounded-sm text-sm font-semibold tracking-[0.15em] uppercase"
                     style={{
                       background: "linear-gradient(135deg, hsl(168,76%,42%), hsl(168,76%,36%))",
                       color: "white",
@@ -158,7 +158,7 @@ const Navbar = () => {
                 ) : (
                   <Link
                     to="/auth"
-                    className="flex items-center gap-2 px-8 py-3 rounded-lg text-sm font-semibold tracking-[0.15em] uppercase"
+                    className="flex items-center gap-2 px-8 py-3 rounded-sm text-sm font-semibold tracking-[0.15em] uppercase"
                     style={{
                       background: "linear-gradient(135deg, hsl(168,76%,42%), hsl(168,76%,36%))",
                       color: "white",
